@@ -1,0 +1,11 @@
+{
+    "endpoint": "apply",
+    "payload": {
+        "inputs": {
+            "example": 1.0
+        }
+    },
+    "expected_outputs": {
+        "example": 1.0
+    }
+}
