@@ -45,6 +45,7 @@ build_config:
   #  - [path/to/source, path/to/destination]
   package_data:
     - [julia, julia]
+    - [juliapkg.json, juliapkg.json]
 
   # Additional Dockerfile commands to run during the build process
   # custom_build_steps:

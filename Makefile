@@ -1,9 +1,10 @@
-.PHONY: help new build test gen-tests data run
+.PHONY: help new build build-debug test gen-tests data run
 
 help:
 	@echo "Available targets:"
 	@echo "  new NAME [RECIPE=jax|pytorch] - Create a new Tesseract component (make new mytess RECIPE=jax)"
 	@echo "  build [NAME]                  - Build all components or a single tesseract (make build mytess)"
+	@echo "  build-debug [NAME]            - Build with verbose Tesseract/Docker output"
 	@echo "  test [NAME]                   - Test all components + app, a single component, or app only"
 	@echo "  gen-tests NAME FILE=case.json - Capture a test case by running an input payload (make gen-tests mytess FILE=in.json)"
 	@echo "  data                          - Pull example data"
@@ -51,6 +52,28 @@ build:
 		TESS_DIR="components/tesseracts/$$TESS_NAME"; \
 		if [ -d "$$TESS_DIR" ]; then \
 			tesseract build $$TESS_DIR; \
+		else \
+			echo "Error: Tesseract $$TESS_NAME not found"; \
+			exit 1; \
+		fi; \
+	fi
+
+build-debug:
+	@set -e; \
+	if [ -z "$(filter-out $@,$(MAKECMDGOALS))" ]; then \
+		echo "Building all components with debug output..."; \
+		for dir in components/tesseracts/*/; do \
+			if [ -d "$$dir" ] && [ "$$(basename $$dir)" != ".template" ]; then \
+				echo "Building $$(basename $$dir)..."; \
+				tesseract --loglevel debug build "$$dir"; \
+			fi; \
+		done; \
+	else \
+		echo "Building tesseract with debug output: $(filter-out $@,$(MAKECMDGOALS))"; \
+		TESS_NAME="$(filter-out $@,$(MAKECMDGOALS))"; \
+		TESS_DIR="components/tesseracts/$$TESS_NAME"; \
+		if [ -d "$$TESS_DIR" ]; then \
+			tesseract --loglevel debug build "$$TESS_DIR"; \
 		else \
 			echo "Error: Tesseract $$TESS_NAME not found"; \
 			exit 1; \
