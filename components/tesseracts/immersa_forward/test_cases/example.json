@@ -1,5 +1,9 @@
 {
     "endpoint": "apply",
-    "payload": {"inputs": {}},
-    "expected_outputs": {}
+    "payload": {"inputs": {
+        "radius": 0.5
+    }},
+    "expected_outputs": {
+        "value": 0.25
+    }
 }

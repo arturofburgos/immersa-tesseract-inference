@@ -3,6 +3,7 @@
 
 # Add Python requirements like this:
 # numpy==1.18.1
+juliacall
 
 # This may contain private dependencies via SSH URLs:
 # git+ssh://git@github.com/username/repo.git@branch
