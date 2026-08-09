@@ -7,28 +7,54 @@
 
 from pathlib import Path
 
+import numpy as np
 from juliacall import Main as jl
 from pydantic import BaseModel
-from tesseract_core.runtime import Float64
+from tesseract_core.runtime import Array, Float64
 
 #
-# Schemas
+# Julia setup
 #
 
 _here = Path(__file__).parent
 jl.include(str(_here / "julia" / "src" / "ImmersaForward.jl"))
 
 
+#
+# Schemas
+#
+
+
 class InputSchema(BaseModel):
-    """Geometry parameters describing the immersed body."""
+    """Geometry and numerical parameters for the Immersa forward solver."""
 
     radius: Float64
 
+    h: Float64 = 0.1
+    dt: Float64 = 0.005
+    tf: Float64 = 1.0
+    Re: Float64 = 200.0
+
+    snapshot_freq: int = 20
+
 
 class OutputSchema(BaseModel):
-    """Downstream wake velocity history produced by the simulation."""
+    """Velocity history produced by the Immersa.jl forward simulation."""
 
-    value: Float64
+    ux: Array[(None, None, None), Float64]
+    uy: Array[(None, None, None), Float64]
+
+    ux_x: Array[(None,), Float64]
+    ux_y: Array[(None,), Float64]
+
+    uy_x: Array[(None,), Float64]
+    uy_y: Array[(None,), Float64]
+
+    times: Array[(None,), Float64]
+
+    radius: Float64
+    n_ib: int
+    ds: Float64
 
 
 #
@@ -37,10 +63,28 @@ class OutputSchema(BaseModel):
 
 
 def apply(inputs: InputSchema) -> OutputSchema:
-    """Run the immersed-boundary simulation for the given geometry."""
-    value = jl.ImmersaForward.radius_squared(float(inputs.radius))
+    """Run the immersed-boundary simulation."""
+    result = jl.ImmersaForward.run_forward(
+        float(inputs.radius),
+        h=float(inputs.h),
+        dt=float(inputs.dt),
+        tf=float(inputs.tf),
+        Re=float(inputs.Re),
+        snapshot_freq=int(inputs.snapshot_freq),
+    )
 
-    return OutputSchema(value=float(value))
+    return OutputSchema(
+        ux=np.asarray(result.ux, dtype=np.float64),
+        uy=np.asarray(result.uy, dtype=np.float64),
+        ux_x=np.asarray(result.ux_x, dtype=np.float64),
+        ux_y=np.asarray(result.ux_y, dtype=np.float64),
+        uy_x=np.asarray(result.uy_x, dtype=np.float64),
+        uy_y=np.asarray(result.uy_y, dtype=np.float64),
+        times=np.asarray(result.times, dtype=np.float64),
+        radius=float(result.radius),
+        n_ib=int(result.n_ib),
+        ds=float(result.ds),
+    )
 
 
 #
