@@ -1,4 +1,4 @@
-.PHONY: help new build build-debug test gen-tests data run
+.PHONY: help new build build-debug test test-immersa gen-tests data run
 
 help:
 	@echo "Available targets:"
@@ -121,6 +121,14 @@ test:
 			exit 1; \
 		fi; \
 	fi
+
+test-immersa:
+	docker run --rm \
+		--entrypoint /bin/bash \
+		immersa_tesseract_inference_immersa_forward:latest \
+		-lc '/tesseract/julia_env/pyjuliapkg/install/bin/julia \
+		--project=/tesseract/julia_env \
+		/tesseract/julia/test/runtests.jl'
 
 gen-tests:
 	@set -e; \
