@@ -158,7 +158,7 @@ gen-tests:
 	OUT="$(OUT)"; [ -n "$$OUT" ] || OUT="$$ENDPOINT.json"; \
 	OUT_PATH="$$TESS_DIR/test_cases/$$OUT"; \
 	echo "Capturing test case for immersa_tesseract_inference_$$TESS_SLUG ($$ENDPOINT) -> $$OUT_PATH"; \
-	OUTPUTS=$$(tesseract run immersa_tesseract_inference_$$TESS_SLUG "$$ENDPOINT" @$(FILE)); \
+	OUTPUTS=$$(tesseract run immersa_tesseract_inference_$$TESS_SLUG "$$ENDPOINT" -f json+base64 @$(FILE)); \
 	mkdir -p "$$TESS_DIR/test_cases"; \
 	ENDPOINT="$$ENDPOINT" PAYLOAD_FILE="$(FILE)" OUTPUTS="$$OUTPUTS" \
 		python scripts/gen_test_case.py > "$$OUT_PATH"; \

@@ -26,9 +26,9 @@ jl.include(str(_here / "julia" / "src" / "ImmersaForward.jl"))
 
 
 class InputSchema(BaseModel):
-    """Geometry and numerical parameters for the Immersa forward solver."""
+    """Angle of attack and numerical parameters for the Immersa forward solver."""
 
-    radius: Float64
+    angle_of_attack_deg: Float64
 
     h: Float64 = 0.1
     dt: Float64 = 0.005
@@ -39,7 +39,7 @@ class InputSchema(BaseModel):
 
 
 class OutputSchema(BaseModel):
-    """Velocity history produced by the Immersa.jl forward simulation."""
+    """Velocity history produced by flow past a fixed flat plate."""
 
     ux: Array[(None, None, None), Float64]
     uy: Array[(None, None, None), Float64]
@@ -52,7 +52,12 @@ class OutputSchema(BaseModel):
 
     times: Array[(None,), Float64]
 
-    radius: Float64
+    angle_of_attack_deg: Float64
+
+    plate_length: Float64
+    mid_chord_x: Float64
+    mid_chord_y: Float64
+
     n_ib: int
     ds: Float64
 
@@ -63,9 +68,9 @@ class OutputSchema(BaseModel):
 
 
 def apply(inputs: InputSchema) -> OutputSchema:
-    """Run the immersed-boundary simulation."""
+    """Run flow past a fixed flat plate at the requested angle of attack."""
     result = jl.ImmersaForward.run_forward(
-        float(inputs.radius),
+        float(inputs.angle_of_attack_deg),
         h=float(inputs.h),
         dt=float(inputs.dt),
         tf=float(inputs.tf),
@@ -81,7 +86,10 @@ def apply(inputs: InputSchema) -> OutputSchema:
         uy_x=np.asarray(result.uy_x, dtype=np.float64),
         uy_y=np.asarray(result.uy_y, dtype=np.float64),
         times=np.asarray(result.times, dtype=np.float64),
-        radius=float(result.radius),
+        angle_of_attack_deg=float(result.angle_of_attack_deg),
+        plate_length=float(result.plate_length),
+        mid_chord_x=float(result.mid_chord_x),
+        mid_chord_y=float(result.mid_chord_y),
         n_ib=int(result.n_ib),
         ds=float(result.ds),
     )

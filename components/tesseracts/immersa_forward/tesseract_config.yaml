@@ -3,7 +3,7 @@
 
 name: "immersa_tesseract_inference_immersa_forward"
 version: "0.1.0"
-description: "Parameterized Immersa.jl forward solver for immersed-body flow inference"
+description: "Immersa.jl forward solver for flow past a fixed flat plate parameterized by angle of attack"
 
 # Environment variables to set in the container
 # env:
