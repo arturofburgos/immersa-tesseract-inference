@@ -7,8 +7,10 @@
 from typing import Any
 
 import equinox as eqx
-from pydantic import BaseModel
-from tesseract_core.runtime import Differentiable, Float64
+import jax
+import jax.numpy as jnp
+from pydantic import BaseModel, Field
+from tesseract_core.runtime import Array, Differentiable, Float64
 from tesseract_core.runtime.jax_recipes import (
     jax_abstract_eval,
     jax_apply,
@@ -17,65 +19,192 @@ from tesseract_core.runtime.jax_recipes import (
     jax_vjp,
 )
 
-# Note: This template uses equinox filter_jit to automatically treat non-array
-# inputs/outputs as static. As Tesseract scalar objects (e.g. Float32) are
-# essentially just wrappers around numpy 0D arrays, they will be considered to
-# be dynamic and will be traced by JAX.
-# If you want to treat scalar numerical values as static you will need to use
-# built-in Python types (e.g. float, int) instead of Float32.
-
-
 #
 # Schemata
 #
 
 
 class InputSchema(BaseModel):
-    """Wake velocity field sampled by the observation operator."""
+    """Dense staggered wake velocity fields and sparse sensor locations."""
 
-    example: Differentiable[Float64]
+    ux: Differentiable[Array[(None, None, None), Float64]] = Field(
+        description="Streamwise velocity field with shape (Nx_ux, Ny_ux, Nt)."
+    )
+
+    uy: Differentiable[Array[(None, None, None), Float64]] = Field(
+        description="Cross-stream velocity field with shape (Nx_uy, Ny_uy, Nt)."
+    )
+
+    ux_x: Array[(None,), Float64] = Field(
+        description="x coordinates of the ux staggered grid."
+    )
+
+    ux_y: Array[(None,), Float64] = Field(
+        description="y coordinates of the ux staggered grid."
+    )
+
+    uy_x: Array[(None,), Float64] = Field(
+        description="x coordinates of the uy staggered grid."
+    )
+
+    uy_y: Array[(None,), Float64] = Field(
+        description="y coordinates of the uy staggered grid."
+    )
+
+    times: Array[(None,), Float64] = Field(
+        description="Times corresponding to the velocity snapshots."
+    )
+
+    sensor_x: Differentiable[Array[(None,), Float64]] = Field(
+        description="x coordinates of the wake sensors."
+    )
+
+    sensor_y: Differentiable[Array[(None,), Float64]] = Field(
+        description="y coordinates of the wake sensors."
+    )
+
+    sensor_times: Array[(None,), Float64] = Field(
+        description="Times at which the sensors are sampled."
+    )
 
 
 class OutputSchema(BaseModel):
-    """Sparse sensor observation vector."""
+    """Sparse wake velocity measurements."""
 
-    example: Differentiable[Float64]
+    measurements: Differentiable[Array[(None, None, 2), Float64]] = Field(
+        description=(
+            "Interpolated wake measurements with shape "
+            "(N_sensors, N_times, 2), where the final dimension is [ux, uy]."
+        )
+    )
 
 
 #
-# Required endpoints
+# Interpolation
 #
 
 
-# TODO: Add or import your function here, must be JAX-jittable and
-# take/return a single pytree as an input/output conforming respectively
-# to Input/OutputSchema
+def _trilinear_interpolate(
+    field: jax.Array,
+    x_grid: jax.Array,
+    y_grid: jax.Array,
+    t_grid: jax.Array,
+    x: jax.Array,
+    y: jax.Array,
+    t: jax.Array,
+) -> jax.Array:
+    """Interpolate a field on a rectilinear x-y-time grid."""
+    ix = jnp.searchsorted(x_grid, x, side="right") - 1
+    iy = jnp.searchsorted(y_grid, y, side="right") - 1
+    it = jnp.searchsorted(t_grid, t, side="right") - 1
+
+    ix = jnp.clip(ix, 0, x_grid.shape[0] - 2)
+    iy = jnp.clip(iy, 0, y_grid.shape[0] - 2)
+    it = jnp.clip(it, 0, t_grid.shape[0] - 2)
+
+    x0 = x_grid[ix]
+    x1 = x_grid[ix + 1]
+
+    y0 = y_grid[iy]
+    y1 = y_grid[iy + 1]
+
+    t0 = t_grid[it]
+    t1 = t_grid[it + 1]
+
+    wx = (x - x0) / (x1 - x0)
+    wy = (y - y0) / (y1 - y0)
+    wt = (t - t0) / (t1 - t0)
+
+    f000 = field[ix, iy, it]
+    f100 = field[ix + 1, iy, it]
+    f010 = field[ix, iy + 1, it]
+    f110 = field[ix + 1, iy + 1, it]
+
+    f001 = field[ix, iy, it + 1]
+    f101 = field[ix + 1, iy, it + 1]
+    f011 = field[ix, iy + 1, it + 1]
+    f111 = field[ix + 1, iy + 1, it + 1]
+
+    f00 = (1.0 - wx) * f000 + wx * f100
+    f10 = (1.0 - wx) * f010 + wx * f110
+
+    f01 = (1.0 - wx) * f001 + wx * f101
+    f11 = (1.0 - wx) * f011 + wx * f111
+
+    f0 = (1.0 - wy) * f00 + wy * f10
+    f1 = (1.0 - wy) * f01 + wy * f11
+
+    return (1.0 - wt) * f0 + wt * f1
+
+
+#
+# Required endpoint
+#
+
+
 @eqx.filter_jit
 def apply_jit(inputs: dict) -> dict:
-    """Map the wake field to sensor observations (JAX-traceable)."""
-    return inputs
+    """Sample the staggered wake velocity fields at sparse sensors."""
+    ux = inputs["ux"]
+    uy = inputs["uy"]
+
+    ux_x = inputs["ux_x"]
+    ux_y = inputs["ux_y"]
+
+    uy_x = inputs["uy_x"]
+    uy_y = inputs["uy_y"]
+
+    times = inputs["times"]
+
+    sensor_x = inputs["sensor_x"]
+    sensor_y = inputs["sensor_y"]
+    sensor_times = inputs["sensor_times"]
+
+    def sample_one_sensor(
+        x: jax.Array,
+        y: jax.Array,
+    ) -> jax.Array:
+        def sample_one_time(t: jax.Array) -> jax.Array:
+            ux_obs = _trilinear_interpolate(
+                ux,
+                ux_x,
+                ux_y,
+                times,
+                x,
+                y,
+                t,
+            )
+
+            uy_obs = _trilinear_interpolate(
+                uy,
+                uy_x,
+                uy_y,
+                times,
+                x,
+                y,
+                t,
+            )
+
+            return jnp.stack((ux_obs, uy_obs))
+
+        return jax.vmap(sample_one_time)(sensor_times)
+
+    measurements = jax.vmap(sample_one_sensor)(
+        sensor_x,
+        sensor_y,
+    )
+
+    return {"measurements": measurements}
 
 
 def apply(inputs: InputSchema) -> OutputSchema:
-    """Evaluate the observation operator."""
-    # Optional: Insert any pre-processing/setup that doesn't require tracing
-    # and is only required when specifically running your apply function
-    # and not your differentiable endpoints.
-    # For example, you might want to set up a logger or mlflow server.
-    # Pre-processing should not modify any input that could impact the
-    # differentiable outputs in a nonlinear way (a constant shift
-    # should be safe)
-
+    """Evaluate the sparse wake observation operator."""
     out = jax_apply(apply_jit, inputs)
-
-    # Optional: Insert any post-processing that doesn't require tracing
-    # For example, you might want to save to disk or modify a non-differentiable
-    # output. Again, do not modify any differentiable output in a non-linear way.
     return OutputSchema(**out)
 
 
 #
-# Jax-handled gradient endpoints (no need to modify)
+# JAX-handled gradient endpoints (no need to modify)
 #
 
 
