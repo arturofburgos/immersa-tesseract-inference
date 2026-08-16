@@ -10,6 +10,7 @@ authors = [{ name = "Arturo Machado Burgos" }]
 license = "Apache-2.0"
 requires-python = ">=3.10"
 dependencies = [
+    "numpy",
     "tesseract-core",
     "typer>=0.9.0",
     # Add more dependencies here
@@ -21,7 +22,6 @@ dev = [
     # For running app/chain.ipynb
     "jupyter",
     "matplotlib",
-    "numpy",
 ]
 
 [project.scripts]
