@@ -1,5 +1,6 @@
 """Composition of ImmersaForward and WakeObservation Tesseracts."""
 
+from collections import OrderedDict
 from contextlib import ExitStack
 from typing import Any
 
@@ -8,6 +9,15 @@ from tesseract_core import Tesseract
 
 IMMERSA_FORWARD_IMAGE = "immersa_tesseract_inference_immersa_forward"
 WAKE_OBSERVATION_IMAGE = "immersa_tesseract_inference_wake_observation"
+
+ForwardCacheKey = tuple[
+    float,
+    float,
+    float,
+    float,
+    float,
+    int,
+]
 
 
 class ForwardObservationPipeline:
@@ -21,31 +31,54 @@ class ForwardObservationPipeline:
             -> WakeObservation
             -> sparse sensor measurements.
 
-    Both Tesseracts remain alive while the context manager is active. This is
-    useful for inverse problems, where the forward-observation map must be
-    evaluated repeatedly for different angle-of-attack guesses.
+    Both Tesseracts remain alive while the context manager is active.
+
+    ImmersaForward results are cached using the physical/numerical simulation
+    parameters. Sensor locations are intentionally not part of the cache key
+    because changing sensors does not change the CFD solution.
+
+    This is useful for inverse problems and sensor-design studies, where the
+    same flow solution may be sampled repeatedly using different sensor arrays.
     """
 
     def __init__(
         self,
         forward_image: str = IMMERSA_FORWARD_IMAGE,
         observation_image: str = WAKE_OBSERVATION_IMAGE,
+        max_cached_flows: int = 8,
     ) -> None:
-        """Initialize the pipeline with the two Tesseract image names."""
+        """Initialize the pipeline and bounded forward-solution cache."""
+        if max_cached_flows < 0:
+            raise ValueError("max_cached_flows must be non-negative.")
+
         self.forward_image = forward_image
         self.observation_image = observation_image
+        self.max_cached_flows = max_cached_flows
 
         self._stack: ExitStack | None = None
         self._forward: Any = None
         self._observation: Any = None
 
+        self._flow_cache: OrderedDict[
+            ForwardCacheKey,
+            dict[str, Any],
+        ] = OrderedDict()
+
+        self._cache_hits = 0
+        self._cache_misses = 0
+
     def __enter__(self) -> "ForwardObservationPipeline":
-        """Start both Tesseracts."""
+        """Start both Tesseracts and initialize a fresh cache session."""
+        self._flow_cache.clear()
+        self._cache_hits = 0
+        self._cache_misses = 0
+
         self._stack = ExitStack()
 
         self._forward = self._stack.enter_context(
             Tesseract.from_image(self.forward_image)
         )
+
         self._observation = self._stack.enter_context(
             Tesseract.from_image(self.observation_image)
         )
@@ -58,7 +91,9 @@ class ForwardObservationPipeline:
         exc_value: Any,
         traceback: Any,
     ) -> None:
-        """Stop both Tesseracts."""
+        """Stop both Tesseracts and release cached flow fields."""
+        self.clear_forward_cache()
+
         if self._stack is not None:
             self._stack.close()
 
@@ -76,12 +111,41 @@ class ForwardObservationPipeline:
         Re: float = 200.0,
         snapshot_freq: int = 20,
     ) -> dict[str, Any]:
-        """Run ImmersaForward for a specified angle of attack."""
+        """Run ImmersaForward or reuse a cached CFD solution."""
         if self._forward is None:
             raise RuntimeError(
                 "Pipeline is not active. Use "
                 "'with ForwardObservationPipeline() as pipeline:'."
             )
+
+        cache_key: ForwardCacheKey = (
+            float(angle_of_attack_deg),
+            float(h),
+            float(dt),
+            float(tf),
+            float(Re),
+            int(snapshot_freq),
+        )
+
+        # ------------------------------------------------------------
+        # Cache hit: the CFD solution for this exact set of physical
+        # and numerical parameters has already been computed.
+        # ------------------------------------------------------------
+
+        if cache_key in self._flow_cache:
+            self._cache_hits += 1
+
+            # Move the entry to the end so it is marked as recently used.
+            flow = self._flow_cache.pop(cache_key)
+            self._flow_cache[cache_key] = flow
+
+            return flow
+
+        # ------------------------------------------------------------
+        # Cache miss: run ImmersaForward.
+        # ------------------------------------------------------------
+
+        self._cache_misses += 1
 
         inputs = {
             "angle_of_attack_deg": float(angle_of_attack_deg),
@@ -92,7 +156,19 @@ class ForwardObservationPipeline:
             "snapshot_freq": int(snapshot_freq),
         }
 
-        return self._forward.apply(inputs)
+        flow = self._forward.apply(inputs)
+
+        # ------------------------------------------------------------
+        # Store the CFD result in a bounded least-recently-used cache.
+        # ------------------------------------------------------------
+
+        if self.max_cached_flows > 0:
+            self._flow_cache[cache_key] = flow
+
+            while len(self._flow_cache) > self.max_cached_flows:
+                self._flow_cache.popitem(last=False)
+
+        return flow
 
     def observe(
         self,
@@ -168,6 +244,19 @@ class ForwardObservationPipeline:
             sensor_y,
             sensor_times,
         )
+
+    def clear_forward_cache(self) -> None:
+        """Remove all cached ImmersaForward solutions."""
+        self._flow_cache.clear()
+
+    def forward_cache_info(self) -> dict[str, int]:
+        """Return statistics for the ImmersaForward cache."""
+        return {
+            "hits": self._cache_hits,
+            "misses": self._cache_misses,
+            "size": len(self._flow_cache),
+            "max_size": self.max_cached_flows,
+        }
 
     @staticmethod
     def _validate_sensor_inputs(
