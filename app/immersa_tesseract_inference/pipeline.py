@@ -215,6 +215,114 @@ class ForwardObservationPipeline:
             dtype=np.float64,
         )
 
+    def forward_angle_jacobian(
+        self,
+        angle_of_attack_deg: float,
+        *,
+        h: float = 0.1,
+        dt: float = 0.005,
+        tf: float = 0.1,
+        Re: float = 200.0,
+        snapshot_freq: int = 20,
+    ) -> dict[str, np.ndarray]:
+        """Request d(field)/d(alpha) from the ImmersaForward Tesseract itself.
+
+        This uses T1's own Jacobian endpoint, which forms the central finite
+        difference internally using the Julia solver. It therefore costs two
+        CFD solves that are *not* visible to this pipeline's flow cache; the
+        cached alpha +/- epsilon path in
+        ``immersa_tesseract_inference.inverse.measurement_sensitivity``
+        remains available and is still cheaper across a line search.
+        """
+        if self._forward is None:
+            raise RuntimeError(
+                "Pipeline is not active. Use "
+                "'with ForwardObservationPipeline() as pipeline:'."
+            )
+
+        inputs = {
+            "angle_of_attack_deg": float(angle_of_attack_deg),
+            "h": float(h),
+            "dt": float(dt),
+            "tf": float(tf),
+            "Re": float(Re),
+            "snapshot_freq": int(snapshot_freq),
+        }
+
+        outputs = self._forward.jacobian(
+            inputs,
+            jac_inputs=["angle_of_attack_deg"],
+            jac_outputs=["ux", "uy"],
+        )
+
+        return {
+            name: np.asarray(
+                outputs[name]["angle_of_attack_deg"],
+                dtype=np.float64,
+            )
+            for name in ("ux", "uy")
+        }
+
+    def observe_jvp(
+        self,
+        flow: dict[str, Any],
+        field_tangent: dict[str, np.ndarray],
+        sensor_x: np.ndarray,
+        sensor_y: np.ndarray,
+        sensor_times: np.ndarray,
+    ) -> np.ndarray:
+        """Push a field-space tangent through WakeObservation.
+
+        Given d(field)/d(theta) in ``field_tangent``, this returns
+        d(measurements)/d(theta) by evaluating T2's JVP at ``flow``. Composing
+        it with :meth:`forward_angle_jacobian` carries a derivative across the
+        Julia -> JAX boundary.
+        """
+        if self._observation is None:
+            raise RuntimeError(
+                "Pipeline is not active. Use "
+                "'with ForwardObservationPipeline() as pipeline:'."
+            )
+
+        sensor_x = np.asarray(sensor_x, dtype=np.float64)
+        sensor_y = np.asarray(sensor_y, dtype=np.float64)
+        sensor_times = np.asarray(sensor_times, dtype=np.float64)
+
+        self._validate_sensor_inputs(
+            flow,
+            sensor_x,
+            sensor_y,
+            sensor_times,
+        )
+
+        inputs = {
+            "ux": flow["ux"],
+            "uy": flow["uy"],
+            "ux_x": flow["ux_x"],
+            "ux_y": flow["ux_y"],
+            "uy_x": flow["uy_x"],
+            "uy_y": flow["uy_y"],
+            "times": flow["times"],
+            "sensor_x": sensor_x,
+            "sensor_y": sensor_y,
+            "sensor_times": sensor_times,
+        }
+
+        outputs = self._observation.jacobian_vector_product(
+            inputs,
+            jvp_inputs=["ux", "uy"],
+            jvp_outputs=["measurements"],
+            tangent_vector={
+                "ux": np.asarray(field_tangent["ux"], dtype=np.float64),
+                "uy": np.asarray(field_tangent["uy"], dtype=np.float64),
+            },
+        )
+
+        return np.asarray(
+            outputs["measurements"],
+            dtype=np.float64,
+        )
+
     def run(
         self,
         angle_of_attack_deg: float,

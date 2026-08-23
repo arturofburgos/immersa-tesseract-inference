@@ -6,11 +6,12 @@
 
 
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 from juliacall import Main as jl
 from pydantic import BaseModel
-from tesseract_core.runtime import Array, Float64
+from tesseract_core.runtime import Array, Differentiable, Float64
 
 #
 # Julia setup
@@ -21,6 +22,34 @@ jl.include(str(_here / "julia" / "src" / "ImmersaForward.jl"))
 
 
 #
+# Finite-difference configuration
+#
+
+# Perturbation used by the derivative endpoints to form
+#
+#     dF/dalpha ~= (F(alpha + eps) - F(alpha - eps)) / (2 eps).
+#
+# 0.5 degrees is not an arbitrary choice:
+#
+#   * it is the epsilon already used by the application-level inverse solver
+#     (``epsilon_deg`` in app/immersa_tesseract_inference/inverse.py) and by
+#     every committed identifiability study, so this endpoint reproduces the
+#     already-validated science rather than introducing a second convention;
+#
+#   * the "Plate AoA finite-difference sensitivity" testset in
+#     julia/test/runtests.jl sweeps eps = 2.0, 1.0, 0.5, 0.25 and confirms
+#     second-order convergence across that range, placing 0.5 inside the
+#     verified regime with a ~1.1e-3 relative gap to the eps = 0.25 estimate.
+#
+# It is deliberately an internal constant rather than a public input: exposing
+# it would widen the T1 schema for a value the science has already fixed.
+_AOA_EPSILON_DEG = 0.5
+
+# Outputs that carry a derivative with respect to the angle of attack.
+_DIFFERENTIABLE_OUTPUTS = ("ux", "uy")
+
+
+#
 # Schemas
 #
 
@@ -28,7 +57,7 @@ jl.include(str(_here / "julia" / "src" / "ImmersaForward.jl"))
 class InputSchema(BaseModel):
     """Angle of attack and numerical parameters for the Immersa forward solver."""
 
-    angle_of_attack_deg: Float64
+    angle_of_attack_deg: Differentiable[Float64]
 
     h: Float64 = 0.1
     dt: Float64 = 0.005
@@ -41,8 +70,8 @@ class InputSchema(BaseModel):
 class OutputSchema(BaseModel):
     """Velocity history produced by flow past a fixed flat plate."""
 
-    ux: Array[(None, None, None), Float64]
-    uy: Array[(None, None, None), Float64]
+    ux: Differentiable[Array[(None, None, None), Float64]]
+    uy: Differentiable[Array[(None, None, None), Float64]]
 
     ux_x: Array[(None,), Float64]
     ux_y: Array[(None,), Float64]
@@ -63,20 +92,38 @@ class OutputSchema(BaseModel):
 
 
 #
-# Required endpoints
+# Shared forward evaluation
 #
 
 
-def apply(inputs: InputSchema) -> OutputSchema:
-    """Run flow past a fixed flat plate at the requested angle of attack."""
-    result = jl.ImmersaForward.run_forward(
-        float(inputs.angle_of_attack_deg),
+def _run_forward(
+    inputs: InputSchema,
+    angle_of_attack_deg: float,
+) -> Any:
+    """Run the Julia solver at one angle of attack.
+
+    The numerical parameters are taken from ``inputs``; only the angle of
+    attack is overridden. Both ``apply`` and the derivative endpoints go
+    through this function so they can never drift apart.
+    """
+    return jl.ImmersaForward.run_forward(
+        float(angle_of_attack_deg),
         h=float(inputs.h),
         dt=float(inputs.dt),
         tf=float(inputs.tf),
         Re=float(inputs.Re),
         snapshot_freq=int(inputs.snapshot_freq),
     )
+
+
+#
+# Required endpoints
+#
+
+
+def apply(inputs: InputSchema) -> OutputSchema:
+    """Run flow past a fixed flat plate at the requested angle of attack."""
+    result = _run_forward(inputs, inputs.angle_of_attack_deg)
 
     return OutputSchema(
         ux=np.asarray(result.ux, dtype=np.float64),
@@ -96,29 +143,119 @@ def apply(inputs: InputSchema) -> OutputSchema:
 
 
 #
-# Optional endpoints
+# Central finite-difference sensitivity
 #
 
-# import numpy as np
 
-# def jacobian(inputs: InputSchema, jac_inputs: set[str], jac_outputs: set[str]):
-#     return {}
+def _angle_derivative(inputs: InputSchema) -> dict[str, np.ndarray]:
+    """Differentiate the velocity fields with respect to the angle of attack.
 
-# def jacobian_vector_product(
-#     inputs: InputSchema,
-#     jvp_inputs: set[str],
-#     jvp_outputs: set[str],
-#     tangent_vector: dict[str, np.typing.ArrayLike]
-# ) -> dict[str, np.typing.ArrayLike]:
-#     return {}
+    Uses the central finite difference
 
-# def vector_jacobian_product(
-#     inputs: InputSchema,
-#     vjp_inputs: set[str],
-#     vjp_outputs: set[str],
-#     cotangent_vector: dict[str, np.typing.ArrayLike]
-# ) -> dict[str, np.typing.ArrayLike]:
-#     return {}
+        dF/dalpha ~= (F(alpha + eps) - F(alpha - eps)) / (2 eps)
 
-# def abstract_eval(abstract_inputs):
-#     return {}
+    with eps = ``_AOA_EPSILON_DEG``. This costs exactly two Julia CFD solves
+    and does not touch the unperturbed solution, so a derivative request never
+    requires the corresponding ``apply`` result.
+
+    Immersa is treated as a black box; this is the same finite difference the
+    Julia regression suite verifies to be second-order convergent in eps.
+    """
+    alpha = float(inputs.angle_of_attack_deg)
+
+    result_plus = _run_forward(inputs, alpha + _AOA_EPSILON_DEG)
+    result_minus = _run_forward(inputs, alpha - _AOA_EPSILON_DEG)
+
+    # The plate marker count depends only on plate length and h, so perturbing
+    # the angle must leave the discretization untouched. If that ever stops
+    # holding, the two solves live on different grids and differencing them is
+    # meaningless -- fail loudly rather than return a plausible-looking array.
+    if int(result_plus.n_ib) != int(result_minus.n_ib):
+        raise RuntimeError(
+            "Immersa boundary discretization changed across the "
+            "finite-difference perturbation: "
+            f"n_ib={int(result_minus.n_ib)} at "
+            f"alpha={alpha - _AOA_EPSILON_DEG} deg versus "
+            f"n_ib={int(result_plus.n_ib)} at "
+            f"alpha={alpha + _AOA_EPSILON_DEG} deg. "
+            "The angle-of-attack derivative is not well defined."
+        )
+
+    scale = 1.0 / (2.0 * _AOA_EPSILON_DEG)
+
+    derivative = {}
+
+    for name in _DIFFERENTIABLE_OUTPUTS:
+        field_plus = np.asarray(getattr(result_plus, name), dtype=np.float64)
+        field_minus = np.asarray(getattr(result_minus, name), dtype=np.float64)
+
+        if field_plus.shape != field_minus.shape:
+            raise RuntimeError(
+                f"Perturbed '{name}' fields have mismatched shapes "
+                f"{field_minus.shape} and {field_plus.shape}."
+            )
+
+        derivative[name] = (field_plus - field_minus) * scale
+
+    return derivative
+
+
+#
+# Optional endpoints
+#
+#
+# The only differentiable input is the scalar angle of attack, so forward-mode
+# is the natural direction: for a scalar input the Jacobian *is* the
+# directional derivative, and one central difference delivers both.
+#
+# ``vector_jacobian_product`` is deliberately not implemented. It would need a
+# full-field cotangent and could not be evaluated for fewer than the same two
+# CFD solves, so it would add API surface without buying anything. Downstream
+# composition pushes forward -- d(field)/d(alpha) is handed to WakeObservation
+# as a JVP tangent -- which is exactly what these endpoints provide.
+#
+# ``abstract_eval`` is also omitted: the output grid extents come out of the
+# Julia solver, so shapes cannot be inferred without running the simulation.
+
+
+def jacobian(
+    inputs: InputSchema,
+    jac_inputs: set[str],
+    jac_outputs: set[str],
+) -> dict[str, dict[str, np.ndarray]]:
+    """Jacobian of the velocity fields with respect to the angle of attack.
+
+    ``angle_of_attack_deg`` is the sole differentiable input and is scalar, so
+    each entry has the same shape as the corresponding output field.
+    """
+    derivative = _angle_derivative(inputs)
+
+    return {
+        output_name: {input_name: derivative[output_name] for input_name in jac_inputs}
+        for output_name in jac_outputs
+    }
+
+
+def jacobian_vector_product(
+    inputs: InputSchema,
+    jvp_inputs: set[str],
+    jvp_outputs: set[str],
+    tangent_vector: dict[str, Any],
+) -> dict[str, np.ndarray]:
+    """Forward-mode directional derivative along ``tangent_vector``.
+
+    With a single scalar differentiable input this is the angle-of-attack
+    sensitivity scaled by the supplied tangent.
+    """
+    derivative = _angle_derivative(inputs)
+
+    tangent = float(
+        np.asarray(
+            tangent_vector["angle_of_attack_deg"],
+            dtype=np.float64,
+        )
+    )
+
+    return {
+        output_name: derivative[output_name] * tangent for output_name in jvp_outputs
+    }
