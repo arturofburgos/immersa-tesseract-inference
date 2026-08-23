@@ -1,0 +1,4 @@
+# WakeSurrogate training and analysis dependencies
+jax[cpu]==0.6.2
+equinox==0.13.8
+optax==0.2.4
