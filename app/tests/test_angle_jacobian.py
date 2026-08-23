@@ -19,7 +19,11 @@ so it avoids that cancellation entirely.
 """
 
 import numpy as np
-from immersa_tesseract_inference.inverse import measurement_sensitivity
+from immersa_tesseract_inference import inverse
+from immersa_tesseract_inference.inverse import (
+    infer_angle_of_attack,
+    measurement_sensitivity,
+)
 from immersa_tesseract_inference.pipeline import ForwardObservationPipeline
 
 # Must match _AOA_EPSILON_DEG in the ImmersaForward Tesseract, otherwise the
@@ -138,3 +142,94 @@ def test_t1_jacobian_matches_app_finite_difference() -> None:
 
     # Guard against a grossly wrong derivative, which would be O(1) relative.
     assert relative_difference < 1.0e-3
+
+
+def test_tesseract_backend_invokes_t1_jacobian_endpoint() -> None:
+    """The tesseract backend must call T1's Jacobian, never the app-level FD.
+
+    Guards against a silent regression in which ``sensitivity_backend`` is
+    ignored and the inference quietly falls back to differencing the composed
+    map. The app-level route is replaced by a tripwire, and the T1 Jacobian
+    endpoint is wrapped so its invocations can be counted.
+    """
+    sensor_x = np.array([1.0, 1.0], dtype=np.float64)
+    sensor_y = np.array([-0.5, 0.5], dtype=np.float64)
+    sensor_times = np.array([0.05, 0.10], dtype=np.float64)
+
+    truth_deg = 60.0
+    initial_deg = 58.0
+
+    def tripwire(*args: object, **kwargs: object) -> None:
+        raise AssertionError(
+            "measurement_sensitivity was called: the tesseract backend fell "
+            "back to the app-level finite difference."
+        )
+
+    with ForwardObservationPipeline() as pipeline:
+        observations = pipeline.run(
+            angle_of_attack_deg=truth_deg,
+            sensor_x=sensor_x,
+            sensor_y=sensor_y,
+            sensor_times=sensor_times,
+            h=H,
+            dt=DT,
+            tf=TF,
+            Re=RE,
+            snapshot_freq=SNAPSHOT_FREQ,
+        )
+
+        jacobian_calls: list[dict] = []
+        real_jacobian = pipeline._forward.jacobian
+        real_measurement_sensitivity = inverse.measurement_sensitivity
+
+        def spy(inputs: dict, *args: object, **kwargs: object) -> dict:
+            jacobian_calls.append(dict(inputs))
+            return real_jacobian(inputs, *args, **kwargs)
+
+        pipeline._forward.jacobian = spy
+        inverse.measurement_sensitivity = tripwire
+
+        try:
+            result = infer_angle_of_attack(
+                pipeline,
+                observations,
+                sensor_x,
+                sensor_y,
+                sensor_times,
+                initial_angle_deg=initial_deg,
+                sensitivity_backend="tesseract",
+                max_iterations=1,
+                h=H,
+                dt=DT,
+                tf=TF,
+                Re=RE,
+                snapshot_freq=SNAPSHOT_FREQ,
+            )
+        finally:
+            inverse.measurement_sensitivity = real_measurement_sensitivity
+            del pipeline._forward.jacobian
+
+    # The derivative came from the T1 Tesseract endpoint.
+    assert len(jacobian_calls) == 1
+
+    # ...evaluated at the current iterate, not at a perturbed angle.
+    assert jacobian_calls[0]["angle_of_attack_deg"] == initial_deg
+
+    # ...and the step actually moved toward the truth.
+    assert abs(result.angle_of_attack_deg - truth_deg) < abs(initial_deg - truth_deg)
+
+
+def test_unknown_sensitivity_backend_is_rejected() -> None:
+    """An unrecognized backend must fail loudly rather than silently default."""
+    import pytest
+
+    with pytest.raises(ValueError, match="sensitivity_backend"):
+        infer_angle_of_attack(
+            None,
+            np.zeros((1, 1, 2)),
+            np.array([1.0]),
+            np.array([0.0]),
+            np.array([0.05]),
+            initial_angle_deg=60.0,
+            sensitivity_backend="not_a_backend",
+        )

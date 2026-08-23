@@ -7,6 +7,10 @@ import numpy as np
 
 from immersa_tesseract_inference.pipeline import ForwardObservationPipeline
 
+# How infer_angle_of_attack obtains dm/dalpha. Both routes return the same
+# quantity; they differ in where the finite difference is formed.
+_SENSITIVITY_BACKENDS = frozenset({"finite_difference", "tesseract"})
+
 
 def _print_cache_status(
     pipeline: ForwardObservationPipeline,
@@ -148,6 +152,88 @@ def measurement_sensitivity(
     return (measurements_plus - measurements_minus) / (2.0 * epsilon_deg)
 
 
+def measurement_sensitivity_tesseract(
+    pipeline: ForwardObservationPipeline,
+    angle_of_attack_deg: float,
+    sensor_x: np.ndarray,
+    sensor_y: np.ndarray,
+    sensor_times: np.ndarray,
+    *,
+    h: float = 0.1,
+    dt: float = 0.005,
+    tf: float = 0.1,
+    Re: float = 200.0,
+    snapshot_freq: int = 20,
+    verbose: bool = False,
+) -> np.ndarray:
+    """Compute dm/dalpha by composing the T1 and T2 derivative endpoints.
+
+    This is the Tesseract-native route:
+
+        alpha
+          -> ImmersaForward.jacobian      (Julia, central FD internally)
+          -> d(ux, uy)/d(alpha)
+          -> WakeObservation.jacobian_vector_product   (JAX)
+          -> dm/dalpha
+
+    The finite difference is never formed here; it is requested from the T1
+    Tesseract, so the derivative genuinely crosses the Julia/JAX boundary
+    through the Tesseract interface.
+
+    Unlike :func:`measurement_sensitivity`, the two perturbed CFD solves happen
+    inside the T1 container and are therefore invisible to this pipeline's flow
+    cache. That method remains the cheaper choice for large multistart studies.
+    """
+    if verbose:
+        print(
+            "  [sensitivity 1/2] Requesting d(field)/d(alpha) from "
+            f"ImmersaForward.jacobian at {angle_of_attack_deg:.6f} deg...",
+            flush=True,
+        )
+
+    field_tangent = pipeline.forward_angle_jacobian(
+        angle_of_attack_deg,
+        h=h,
+        dt=dt,
+        tf=tf,
+        Re=Re,
+        snapshot_freq=snapshot_freq,
+    )
+
+    if verbose:
+        print("  [sensitivity 1/2] Done.", flush=True)
+        print(
+            "  [sensitivity 2/2] Propagating the tangent through WakeObservation...",
+            flush=True,
+        )
+
+    # The unperturbed flow supplies the grids and times that T2 needs. It is
+    # normally already cached from the objective evaluation at this angle, so
+    # this costs no additional CFD solve.
+    flow = pipeline.run_forward(
+        angle_of_attack_deg,
+        h=h,
+        dt=dt,
+        tf=tf,
+        Re=Re,
+        snapshot_freq=snapshot_freq,
+    )
+
+    sensitivity = pipeline.observe_jvp(
+        flow,
+        field_tangent,
+        sensor_x,
+        sensor_y,
+        sensor_times,
+    )
+
+    if verbose:
+        print("  [sensitivity 2/2] Done.", flush=True)
+        _print_cache_status(pipeline, prefix="    ")
+
+    return sensitivity
+
+
 def objective_gradient(
     pipeline: ForwardObservationPipeline,
     angle_of_attack_deg: float,
@@ -224,6 +310,7 @@ def infer_angle_of_attack(
     sensor_times: np.ndarray,
     *,
     initial_angle_deg: float,
+    sensitivity_backend: str = "finite_difference",
     epsilon_deg: float = 0.5,
     damping: float = 1.0e-12,
     max_step_deg: float = 10.0,
@@ -257,7 +344,26 @@ def infer_angle_of_attack(
 
     A maximum step and backtracking are used to prevent an inaccurate local
     linearization from producing an excessively large update.
+
+    ``sensitivity_backend`` selects how dm/dalpha is obtained without changing
+    any of the numerics above:
+
+    ``"finite_difference"``
+        :func:`measurement_sensitivity` -- the app-level central difference on
+        the composed T1 -> T2 map. Its perturbed solves populate the pipeline
+        flow cache, so this stays the cheaper option for multistart studies.
+
+    ``"tesseract"``
+        :func:`measurement_sensitivity_tesseract` -- the derivative reported by
+        the ImmersaForward Jacobian endpoint and propagated through the
+        WakeObservation JVP.
     """
+    if sensitivity_backend not in _SENSITIVITY_BACKENDS:
+        raise ValueError(
+            f"sensitivity_backend must be one of {sorted(_SENSITIVITY_BACKENDS)}; "
+            f"got {sensitivity_backend!r}."
+        )
+
     if epsilon_deg <= 0.0:
         raise ValueError("epsilon_deg must be positive.")
 
@@ -393,20 +499,35 @@ def infer_angle_of_attack(
         if verbose:
             print("\nComputing measurement sensitivity...", flush=True)
 
-        sensitivity = measurement_sensitivity(
-            pipeline,
-            alpha,
-            sensor_x,
-            sensor_y,
-            sensor_times,
-            epsilon_deg=epsilon_deg,
-            h=h,
-            dt=dt,
-            tf=tf,
-            Re=Re,
-            snapshot_freq=snapshot_freq,
-            verbose=verbose,
-        )
+        if sensitivity_backend == "tesseract":
+            sensitivity = measurement_sensitivity_tesseract(
+                pipeline,
+                alpha,
+                sensor_x,
+                sensor_y,
+                sensor_times,
+                h=h,
+                dt=dt,
+                tf=tf,
+                Re=Re,
+                snapshot_freq=snapshot_freq,
+                verbose=verbose,
+            )
+        else:
+            sensitivity = measurement_sensitivity(
+                pipeline,
+                alpha,
+                sensor_x,
+                sensor_y,
+                sensor_times,
+                epsilon_deg=epsilon_deg,
+                h=h,
+                dt=dt,
+                tf=tf,
+                Re=Re,
+                snapshot_freq=snapshot_freq,
+                verbose=verbose,
+            )
 
         gradient = float(np.sum(residual * sensitivity))
         gauss_newton_curvature = float(np.sum(sensitivity**2))
