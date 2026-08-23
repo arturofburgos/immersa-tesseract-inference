@@ -1,0 +1,4 @@
+metric,value
+curve_rmse_J_per_scalar,0.014429688662066356
+curve_rmse_percent_cfd_range,1.6814393355039217
+pearson_correlation,0.9974765476597288

@@ -1,0 +1,16 @@
+curve,alpha_deg,J_per_scalar
+real_cfd,27.0,0.17944724047504487
+real_cfd,42.0,0.4351782539107993
+real_cfd,51.0,0.24664345553834371
+real_cfd,63.0,0.0
+real_cfd,83.0,0.04781574937843525
+surrogate_vs_cfd_truth,20.75,0.2312578477696386
+surrogate_vs_cfd_truth,25.75,0.1824209346594751
+surrogate_vs_cfd_truth,39.0,0.4386349697580453
+surrogate_vs_cfd_truth,63.0,0.0005262719669025318
+surrogate_vs_cfd_truth,83.25,0.030154844400335407
+surrogate_self_truth,20.75,0.23160540768375032
+surrogate_self_truth,25.75,0.18045428214090395
+surrogate_self_truth,39.0,0.4401521093199756
+surrogate_self_truth,63.0,0.0
+surrogate_self_truth,83.25,0.02945107422783231
