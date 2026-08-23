@@ -208,3 +208,25 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+
+# Immersa Tesseract project-generated data
+# Generated CFD and surrogate training datasets
+data/
+
+# Exploratory CFD outputs
+developed_wake_*.npz
+developed_wake_centerline_uy_tf20.png
+
+# Superseded WakeSurrogate model versions
+models/wake_surrogate/best_model.eqx
+models/wake_surrogate/normalization.npz
+models/wake_surrogate/training.log
+models/wake_surrogate/v2_spatial_fourier/
+models/wake_surrogate/v3_dense_high_aoa/
+models/wake_surrogate/v4_dense_aoa/training.log
+
+# Superseded WakeSurrogate validation experiments
+results/wake_surrogate/validation/
+results/wake_surrogate/validation_v2_spatial_fourier/
+results/wake_surrogate/validation_v3_dense_high_aoa/
