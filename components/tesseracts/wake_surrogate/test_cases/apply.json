@@ -17,6 +17,9 @@
     }
   },
 
+  "atol": 1e-5,
+  "rtol": 1e-5,
+
   "expected_outputs": {
     "measurements": {
       "object_type": "array",
