@@ -1,0 +1,105 @@
+{
+  "s_star_surrogate": {
+    "x1": 1.0,
+    "y1": -0.16925565522512323,
+    "x2": 2.588428679688709,
+    "y2": 0.008902068445642432
+  },
+  "layout_vector": [
+    1.0,
+    -0.16925565522512323,
+    2.588428679688709,
+    0.008902068445642432
+  ],
+  "D_tau": 0.29586222767829895,
+  "hard_min_distance": 0.15674233436584473,
+  "n_eff_at_s_star": 12.045597319310774,
+  "top1_weight_at_s_star": 0.23543583070509283,
+  "top5_weight_at_s_star": 0.6842851637122227,
+  "top10_weight_at_s_star": 0.8992352708215355,
+  "sensor_separation": 1.5983885150241677,
+  "source_run": "F03_streamwise",
+  "source_convergence_status": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+  "source_converged": true,
+  "selection_rule": "Maximum frozen T4 discrimination at delta_alpha_min = 7.5 deg. Layouts within the tie tolerance of the maximum are numerically tied; among tied layouts in the same solution cluster a normally converged optimizer termination is preferred over an abnormal one, then the fewest objective evaluations. Selection used only surrogate optimization diagnostics -- no physical or CFD result influenced it.",
+  "tie_tolerance": 1e-06,
+  "cluster_radius": 0.05,
+  "tied_candidates": [
+    {
+      "start": "F03_streamwise",
+      "D_tau": 0.29586222767829895,
+      "converged": true,
+      "status": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+      "layout": [
+        1.0,
+        -0.16925565522512323,
+        2.588428679688709,
+        0.008902068445642432
+      ]
+    },
+    {
+      "start": "F07_antidiagonal",
+      "D_tau": 0.2958622872829437,
+      "converged": true,
+      "status": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+      "layout": [
+        1.0,
+        -0.1692724036460328,
+        2.588508880186317,
+        0.008820265064798183
+      ]
+    },
+    {
+      "start": "R04_random",
+      "D_tau": 0.2958625257015228,
+      "converged": false,
+      "status": "ABNORMAL: ",
+      "layout": [
+        1.0,
+        -0.1692250030197847,
+        2.5884149561071244,
+        0.008910620165683988
+      ]
+    }
+  ],
+  "tau": 0.032676688301808206,
+  "tau_calibration": "solved at the baseline layout (1,-0.4),(1,+0.4) so that the soft-minimum weight perplexity N_eff = 10; frozen thereafter",
+  "delta_alpha_min_deg": 7.5,
+  "min_sensor_separation": 0.2,
+  "alpha_grid_deg": [
+    20.0,
+    22.5,
+    25.0,
+    27.5,
+    30.0,
+    32.5,
+    35.0,
+    37.5,
+    40.0,
+    42.5,
+    45.0,
+    47.5,
+    50.0,
+    52.5,
+    55.0,
+    57.5,
+    60.0,
+    62.5,
+    65.0,
+    67.5,
+    70.0,
+    72.5,
+    75.0,
+    77.5,
+    80.0,
+    82.5,
+    85.0
+  ],
+  "sealed_truth_excluded": {
+    "angle_deg": 63.0,
+    "present_in_design_grid": false,
+    "note": "The sealed physical truth is not on the design grid and was never evaluated during design."
+  },
+  "immutability": "Frozen surrogate proposal. Must not be modified in response to real-CFD performance. Any physically refined array must be recorded separately as s_star_cfd_refined.",
+  "git_commit": "a34366a5359f0794bd4c8fcb60a7f0699b41a4ba-dirty"
+}
