@@ -530,17 +530,19 @@ class SensorDesignPipeline:
     # Objective
     # ----------------------------------------------------------------
 
-    def objective_and_gradient(
+    def objective_gradient_and_diagnostics(
         self,
         design: np.ndarray,
         *,
         tau: float,
         lambda_separation: float,
         min_distance: float = MIN_SENSOR_DISTANCE,
-    ) -> tuple[float, np.ndarray]:
-        """Minimized objective and its gradient in [x1, y1, x2, y2].
+    ) -> tuple[float, np.ndarray, dict[str, float]]:
+        """Objective, gradient, and the diagnostics that fall out for free.
 
-        L(s) = -D_tau(s) + lambda * relu(min_distance - r)^2
+        The diagnostics are byproducts of quantities the objective already
+        computes, so recording an optimizer trajectory costs no additional
+        Tesseract calls.
         """
         design = np.asarray(design, dtype=np.float64)
 
@@ -562,4 +564,44 @@ class SensorDesignPipeline:
 
         gradient = -grad_discrimination + grad_penalty
 
-        return float(objective), gradient
+        mask = retained_pair_mask(self.alpha_grid_deg, self.delta_alpha_min_deg)
+
+        distances = scored["pair_distances"][mask]
+
+        weights = np.sort(softmin_weights(distances, tau))[::-1]
+
+        separation = float(np.hypot(design[0] - design[2], design[1] - design[3]))
+
+        diagnostics = {
+            "discrimination": scored["discrimination"],
+            "hard_min_distance": scored["min_pair_distance"],
+            "effective_pairs": effective_pair_count(distances, tau),
+            "top1_weight": float(weights[0]),
+            "top10_weight": float(weights[:10].sum()),
+            "separation": separation,
+            "penalty": penalty,
+            "objective": float(objective),
+        }
+
+        return float(objective), gradient, diagnostics
+
+    def objective_and_gradient(
+        self,
+        design: np.ndarray,
+        *,
+        tau: float,
+        lambda_separation: float,
+        min_distance: float = MIN_SENSOR_DISTANCE,
+    ) -> tuple[float, np.ndarray]:
+        """Minimized objective and its gradient in [x1, y1, x2, y2].
+
+        L(s) = -D_tau(s) + lambda * relu(min_distance - r)^2
+        """
+        objective, gradient, _ = self.objective_gradient_and_diagnostics(
+            design,
+            tau=tau,
+            lambda_separation=lambda_separation,
+            min_distance=min_distance,
+        )
+
+        return objective, gradient

@@ -1,0 +1,13 @@
+{
+  "tau": 0.032676688301808206,
+  "legacy_tau": 0.08262080699205399,
+  "effective_pairs": 9.999999999722357,
+  "legacy_effective_pairs": 47.261514762094656,
+  "top1_weight": 0.23050263215700284,
+  "top10_weight": 0.902448486594589,
+  "lambda_separation": 152.75708585977551,
+  "min_distance": 0.09047239273786545,
+  "rank_distance": 0.17309319972991943,
+  "median_distance": 0.6110283434391022,
+  "n_pairs": 300
+}

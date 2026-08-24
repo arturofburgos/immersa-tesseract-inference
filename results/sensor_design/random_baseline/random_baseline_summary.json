@@ -1,0 +1,22 @@
+{
+  "n_layouts": 10000,
+  "seed": 0,
+  "tau": 0.032676688301808206,
+  "delta_alpha_min_deg": 7.5,
+  "D_baseline": 0.22890031337738037,
+  "D_star_surrogate": 0.29586222767829895,
+  "random_best": 0.2884654402732849,
+  "random_median": 0.1856711283326149,
+  "random_p95": 0.24838787019252775,
+  "random_p99": 0.2681035953760148,
+  "random_p999": 0.2798081281483174,
+  "s_star_percentile": 100.0,
+  "s_star_rank": 1,
+  "n_random_beating_s_star": 0,
+  "fraction_beating_baseline": 0.1242,
+  "fraction_within_half_percent_of_star": 0.0,
+  "measurement_time_s": 0.4685254770156462,
+  "scoring_time_s": 31.602008059009677,
+  "seconds_per_candidate": 0.0031602008059009676,
+  "total_time_s": 37.62695677901502
+}
