@@ -1,0 +1,101 @@
+{
+  "alpha_true_deg": 63.0,
+  "layouts": {
+    "baseline": {
+      "global_minimum_alpha_deg": 63.0,
+      "global_minimum_value": 0.0,
+      "global_minimum_is_truth": true,
+      "objective_at_truth": 0.0,
+      "all_local_minima_deg": [
+        27.0,
+        42.0,
+        51.0,
+        63.0,
+        83.0
+      ],
+      "all_local_minima_values": [
+        0.17944724047504487,
+        0.4351782539107993,
+        0.24664345553834371,
+        0.0,
+        0.04781574937843525
+      ],
+      "false_minima_deg": [
+        27.0,
+        42.0,
+        51.0,
+        83.0
+      ],
+      "false_minima_values": [
+        0.17944724047504487,
+        0.4351782539107993,
+        0.24664345553834371,
+        0.04781574937843525
+      ],
+      "n_false_minima": 4,
+      "best_false_minimum_alpha_deg": 83.0,
+      "best_false_minimum_value": 0.04781574937843525,
+      "true_to_best_false_margin": 0.04781574937843525,
+      "n_competitive_false_minima": 1,
+      "layout": [
+        1.0,
+        -0.4,
+        1.0,
+        0.4
+      ],
+      "n_scalar": 20
+    },
+    "s_star_surrogate": {
+      "global_minimum_alpha_deg": 63.0,
+      "global_minimum_value": 0.0,
+      "global_minimum_is_truth": true,
+      "objective_at_truth": 0.0,
+      "all_local_minima_deg": [
+        26.0,
+        42.0,
+        51.0,
+        63.0,
+        83.0
+      ],
+      "all_local_minima_values": [
+        0.21903024423532386,
+        0.5587467859624897,
+        0.29700890876505126,
+        0.0,
+        0.049656601397585015
+      ],
+      "false_minima_deg": [
+        26.0,
+        42.0,
+        51.0,
+        83.0
+      ],
+      "false_minima_values": [
+        0.21903024423532386,
+        0.5587467859624897,
+        0.29700890876505126,
+        0.049656601397585015
+      ],
+      "n_false_minima": 4,
+      "best_false_minimum_alpha_deg": 83.0,
+      "best_false_minimum_value": 0.049656601397585015,
+      "true_to_best_false_margin": 0.049656601397585015,
+      "n_competitive_false_minima": 1,
+      "layout": [
+        1.0,
+        -0.16925565522512323,
+        2.588428679688709,
+        0.008902068445642432
+      ],
+      "n_scalar": 20
+    }
+  },
+  "baseline_regression": {
+    "n_shared_angles": 66,
+    "max_absolute_difference": 0.0,
+    "max_relative_to_range": 0.0,
+    "correlation": 0.9999999999999999
+  },
+  "margin_improvement_factor": 1.03849886372334,
+  "false_minima_change": 0
+}

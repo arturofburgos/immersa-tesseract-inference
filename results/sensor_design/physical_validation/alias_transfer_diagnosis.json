@@ -1,0 +1,120 @@
+{
+  "explanation": "The landscape objective equals half the T4 pair distance to the truth, so each false minimum is a pair distance involving 63 deg. None of 63 deg or its aliases lie on the 2.5 degree design grid, so T4 never optimized them directly. The well-resolved aliases (27, 42, 51) improved by 20-28 percent, in line with the overall T4 gain. The alias that sets the margin, 83 deg, improved by only 3.8 percent: the 63-83 confusion is roughly three times sharper than its nearest design-grid proxy (62.5, 82.5), so it is a sub-grid-scale feature the design criterion could not see.",
+  "alpha_true_deg": 63.0,
+  "truth_on_design_grid": false,
+  "alias_pairs": [
+    {
+      "alias_deg": 27.0,
+      "on_design_grid": false,
+      "d_baseline": 0.35889448095008974,
+      "d_s_star": 0.43941376630096407,
+      "relative_change": 0.22435364605696423
+    },
+    {
+      "alias_deg": 42.0,
+      "on_design_grid": false,
+      "d_baseline": 0.8703565078215986,
+      "d_s_star": 1.1174935719249794,
+      "relative_change": 0.28394923446018266
+    },
+    {
+      "alias_deg": 51.0,
+      "on_design_grid": false,
+      "d_baseline": 0.49328691107668743,
+      "d_s_star": 0.5940178175301025,
+      "relative_change": 0.20420348521624418
+    },
+    {
+      "alias_deg": 83.0,
+      "on_design_grid": false,
+      "d_baseline": 0.0956314987568705,
+      "d_s_star": 0.09931320279517003,
+      "relative_change": 0.038498863723340083
+    }
+  ],
+  "decisive_alias": {
+    "alias_deg": 83.0,
+    "d_true_pair_baseline": 0.0956314987568705,
+    "d_true_pair_s_star": 0.09931320279517003,
+    "d_design_grid_proxy_baseline": 0.30721545219421387,
+    "d_design_grid_proxy_s_star": 0.3426538109779358,
+    "proxy_over_true_ratio_baseline": 3.212492287455052,
+    "note": "The proxy pair (62.5, 82.5) is far easier to separate than the true (63, 83) pair, so optimizing the proxy does not fix the alias that actually limits inference."
+  },
+  "hardest_design_grid_pairs": {
+    "baseline": [
+      {
+        "pair_deg": [
+          70.0,
+          85.0
+        ],
+        "distance": 0.09737706184387207
+      },
+      {
+        "pair_deg": [
+          57.5,
+          82.5
+        ],
+        "distance": 0.10909140110015869
+      },
+      {
+        "pair_deg": [
+          55.0,
+          82.5
+        ],
+        "distance": 0.11374866217374802
+      },
+      {
+        "pair_deg": [
+          60.0,
+          67.5
+        ],
+        "distance": 0.1215452328324318
+      },
+      {
+        "pair_deg": [
+          72.5,
+          85.0
+        ],
+        "distance": 0.12229102849960327
+      }
+    ],
+    "s_star_surrogate": [
+      {
+        "pair_deg": [
+          60.0,
+          67.5
+        ],
+        "distance": 0.10249443352222443
+      },
+      {
+        "pair_deg": [
+          57.5,
+          65.0
+        ],
+        "distance": 0.147894486784935
+      },
+      {
+        "pair_deg": [
+          55.0,
+          82.5
+        ],
+        "distance": 0.15688884258270264
+      },
+      {
+        "pair_deg": [
+          47.5,
+          55.0
+        ],
+        "distance": 0.1715521663427353
+      },
+      {
+        "pair_deg": [
+          57.5,
+          82.5
+        ],
+        "distance": 0.17975978553295135
+      }
+    ]
+  }
+}

@@ -1,0 +1,1951 @@
+{
+  "description": "Dense ImmersaForward wake fields at the five observation times, one entry per angle of attack. Sensors are passive, so these fields serve any sensor layout without new CFD.",
+  "configuration": {
+    "h": 0.05,
+    "dt": 0.0025,
+    "tf": 20.0,
+    "Re": 200.0,
+    "snapshot_freq": 40,
+    "observation_times": [
+      12.0,
+      13.3,
+      15.1,
+      17.4,
+      20.0
+    ]
+  },
+  "provenance": {
+    "source": "ImmersaForward Tesseract (T1)",
+    "image": "immersa_tesseract_inference_immersa_forward",
+    "immersa_commit": "62810dcff9418d6fface55dd34b5f1b914ffa743"
+  },
+  "grids": {
+    "design_grid_deg": [
+      20.0,
+      22.5,
+      25.0,
+      27.5,
+      30.0,
+      32.5,
+      35.0,
+      37.5,
+      40.0,
+      42.5,
+      45.0,
+      47.5,
+      50.0,
+      52.5,
+      55.0,
+      57.5,
+      60.0,
+      62.5,
+      65.0,
+      67.5,
+      70.0,
+      72.5,
+      75.0,
+      77.5,
+      80.0,
+      82.5,
+      85.0
+    ],
+    "landscape_grid_deg": [
+      20.0,
+      21.0,
+      22.0,
+      23.0,
+      24.0,
+      25.0,
+      26.0,
+      27.0,
+      28.0,
+      29.0,
+      30.0,
+      31.0,
+      32.0,
+      33.0,
+      34.0,
+      35.0,
+      36.0,
+      37.0,
+      38.0,
+      39.0,
+      40.0,
+      41.0,
+      42.0,
+      43.0,
+      44.0,
+      45.0,
+      46.0,
+      47.0,
+      48.0,
+      49.0,
+      50.0,
+      51.0,
+      52.0,
+      53.0,
+      54.0,
+      55.0,
+      56.0,
+      57.0,
+      58.0,
+      59.0,
+      60.0,
+      61.0,
+      62.0,
+      63.0,
+      64.0,
+      65.0,
+      66.0,
+      67.0,
+      68.0,
+      69.0,
+      70.0,
+      71.0,
+      72.0,
+      73.0,
+      74.0,
+      75.0,
+      76.0,
+      77.0,
+      78.0,
+      79.0,
+      80.0,
+      81.0,
+      82.0,
+      83.0,
+      84.0,
+      85.0
+    ],
+    "union_size": 79
+  },
+  "storage": {
+    "directory": "data/cfd_validation_bank",
+    "gitignored": true,
+    "total_bytes": 50721101,
+    "total_megabytes": 50.721101
+  },
+  "build": {
+    "solved_this_run": 0,
+    "wall_time_s": 4.010216798633337e-07
+  },
+  "entries": [
+    {
+      "angle_of_attack_deg": 20.0,
+      "file": "alpha_020p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 637209
+    },
+    {
+      "angle_of_attack_deg": 21.0,
+      "file": "alpha_021p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 638299
+    },
+    {
+      "angle_of_attack_deg": 22.0,
+      "file": "alpha_022p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 638699
+    },
+    {
+      "angle_of_attack_deg": 22.5,
+      "file": "alpha_022p500.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 638698
+    },
+    {
+      "angle_of_attack_deg": 23.0,
+      "file": "alpha_023p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 639188
+    },
+    {
+      "angle_of_attack_deg": 24.0,
+      "file": "alpha_024p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 639193
+    },
+    {
+      "angle_of_attack_deg": 25.0,
+      "file": "alpha_025p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 639497
+    },
+    {
+      "angle_of_attack_deg": 26.0,
+      "file": "alpha_026p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 639865
+    },
+    {
+      "angle_of_attack_deg": 27.0,
+      "file": "alpha_027p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 639881
+    },
+    {
+      "angle_of_attack_deg": 27.5,
+      "file": "alpha_027p500.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 640576
+    },
+    {
+      "angle_of_attack_deg": 28.0,
+      "file": "alpha_028p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 640035
+    },
+    {
+      "angle_of_attack_deg": 29.0,
+      "file": "alpha_029p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 640847
+    },
+    {
+      "angle_of_attack_deg": 30.0,
+      "file": "alpha_030p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 641017
+    },
+    {
+      "angle_of_attack_deg": 31.0,
+      "file": "alpha_031p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 640537
+    },
+    {
+      "angle_of_attack_deg": 32.0,
+      "file": "alpha_032p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 641265
+    },
+    {
+      "angle_of_attack_deg": 32.5,
+      "file": "alpha_032p500.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 640678
+    },
+    {
+      "angle_of_attack_deg": 33.0,
+      "file": "alpha_033p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 640827
+    },
+    {
+      "angle_of_attack_deg": 34.0,
+      "file": "alpha_034p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 640967
+    },
+    {
+      "angle_of_attack_deg": 35.0,
+      "file": "alpha_035p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 640921
+    },
+    {
+      "angle_of_attack_deg": 36.0,
+      "file": "alpha_036p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 641583
+    },
+    {
+      "angle_of_attack_deg": 37.0,
+      "file": "alpha_037p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 641381
+    },
+    {
+      "angle_of_attack_deg": 37.5,
+      "file": "alpha_037p500.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642163
+    },
+    {
+      "angle_of_attack_deg": 38.0,
+      "file": "alpha_038p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642209
+    },
+    {
+      "angle_of_attack_deg": 39.0,
+      "file": "alpha_039p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 641717
+    },
+    {
+      "angle_of_attack_deg": 40.0,
+      "file": "alpha_040p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642475
+    },
+    {
+      "angle_of_attack_deg": 41.0,
+      "file": "alpha_041p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 641968
+    },
+    {
+      "angle_of_attack_deg": 42.0,
+      "file": "alpha_042p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642083
+    },
+    {
+      "angle_of_attack_deg": 42.5,
+      "file": "alpha_042p500.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 641954
+    },
+    {
+      "angle_of_attack_deg": 43.0,
+      "file": "alpha_043p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 641922
+    },
+    {
+      "angle_of_attack_deg": 44.0,
+      "file": "alpha_044p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642506
+    },
+    {
+      "angle_of_attack_deg": 45.0,
+      "file": "alpha_045p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 641904
+    },
+    {
+      "angle_of_attack_deg": 46.0,
+      "file": "alpha_046p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642635
+    },
+    {
+      "angle_of_attack_deg": 47.0,
+      "file": "alpha_047p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642677
+    },
+    {
+      "angle_of_attack_deg": 47.5,
+      "file": "alpha_047p500.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642197
+    },
+    {
+      "angle_of_attack_deg": 48.0,
+      "file": "alpha_048p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642732
+    },
+    {
+      "angle_of_attack_deg": 49.0,
+      "file": "alpha_049p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642385
+    },
+    {
+      "angle_of_attack_deg": 50.0,
+      "file": "alpha_050p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642537
+    },
+    {
+      "angle_of_attack_deg": 51.0,
+      "file": "alpha_051p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642356
+    },
+    {
+      "angle_of_attack_deg": 52.0,
+      "file": "alpha_052p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642482
+    },
+    {
+      "angle_of_attack_deg": 52.5,
+      "file": "alpha_052p500.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642974
+    },
+    {
+      "angle_of_attack_deg": 53.0,
+      "file": "alpha_053p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642438
+    },
+    {
+      "angle_of_attack_deg": 54.0,
+      "file": "alpha_054p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642942
+    },
+    {
+      "angle_of_attack_deg": 55.0,
+      "file": "alpha_055p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642882
+    },
+    {
+      "angle_of_attack_deg": 56.0,
+      "file": "alpha_056p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642642
+    },
+    {
+      "angle_of_attack_deg": 57.0,
+      "file": "alpha_057p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642840
+    },
+    {
+      "angle_of_attack_deg": 57.5,
+      "file": "alpha_057p500.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642531
+    },
+    {
+      "angle_of_attack_deg": 58.0,
+      "file": "alpha_058p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642574
+    },
+    {
+      "angle_of_attack_deg": 59.0,
+      "file": "alpha_059p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642611
+    },
+    {
+      "angle_of_attack_deg": 60.0,
+      "file": "alpha_060p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642638
+    },
+    {
+      "angle_of_attack_deg": 61.0,
+      "file": "alpha_061p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 643090
+    },
+    {
+      "angle_of_attack_deg": 62.0,
+      "file": "alpha_062p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642630
+    },
+    {
+      "angle_of_attack_deg": 62.5,
+      "file": "alpha_062p500.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 643109
+    },
+    {
+      "angle_of_attack_deg": 63.0,
+      "file": "alpha_063p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 643111
+    },
+    {
+      "angle_of_attack_deg": 64.0,
+      "file": "alpha_064p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642671
+    },
+    {
+      "angle_of_attack_deg": 65.0,
+      "file": "alpha_065p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 643088
+    },
+    {
+      "angle_of_attack_deg": 66.0,
+      "file": "alpha_066p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642660
+    },
+    {
+      "angle_of_attack_deg": 67.0,
+      "file": "alpha_067p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642775
+    },
+    {
+      "angle_of_attack_deg": 67.5,
+      "file": "alpha_067p500.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642834
+    },
+    {
+      "angle_of_attack_deg": 68.0,
+      "file": "alpha_068p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642676
+    },
+    {
+      "angle_of_attack_deg": 69.0,
+      "file": "alpha_069p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 643205
+    },
+    {
+      "angle_of_attack_deg": 70.0,
+      "file": "alpha_070p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642879
+    },
+    {
+      "angle_of_attack_deg": 71.0,
+      "file": "alpha_071p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 643284
+    },
+    {
+      "angle_of_attack_deg": 72.0,
+      "file": "alpha_072p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 643520
+    },
+    {
+      "angle_of_attack_deg": 72.5,
+      "file": "alpha_072p500.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 643135
+    },
+    {
+      "angle_of_attack_deg": 73.0,
+      "file": "alpha_073p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 643512
+    },
+    {
+      "angle_of_attack_deg": 74.0,
+      "file": "alpha_074p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 643189
+    },
+    {
+      "angle_of_attack_deg": 75.0,
+      "file": "alpha_075p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 643138
+    },
+    {
+      "angle_of_attack_deg": 76.0,
+      "file": "alpha_076p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 643329
+    },
+    {
+      "angle_of_attack_deg": 77.0,
+      "file": "alpha_077p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 643307
+    },
+    {
+      "angle_of_attack_deg": 77.5,
+      "file": "alpha_077p500.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 643690
+    },
+    {
+      "angle_of_attack_deg": 78.0,
+      "file": "alpha_078p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 643219
+    },
+    {
+      "angle_of_attack_deg": 79.0,
+      "file": "alpha_079p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 643689
+    },
+    {
+      "angle_of_attack_deg": 80.0,
+      "file": "alpha_080p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 643374
+    },
+    {
+      "angle_of_attack_deg": 81.0,
+      "file": "alpha_081p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 643024
+    },
+    {
+      "angle_of_attack_deg": 82.0,
+      "file": "alpha_082p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 643273
+    },
+    {
+      "angle_of_attack_deg": 82.5,
+      "file": "alpha_082p500.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642808
+    },
+    {
+      "angle_of_attack_deg": 83.0,
+      "file": "alpha_083p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642474
+    },
+    {
+      "angle_of_attack_deg": 84.0,
+      "file": "alpha_084p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642489
+    },
+    {
+      "angle_of_attack_deg": 85.0,
+      "file": "alpha_085p000.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642782
+    }
+  ]
+}
