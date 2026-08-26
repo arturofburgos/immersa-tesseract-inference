@@ -1,0 +1,41 @@
+{
+  "s_star_cfd_refined": {
+    "x1": 1.2250000245046586,
+    "y1": -0.12700562434556834,
+    "x2": 2.9249998459166284,
+    "y2": -0.24997590969384686
+  },
+  "layout_vector": [
+    1.2250000245046586,
+    -0.12700562434556834,
+    2.9249998459166284,
+    -0.24997590969384686
+  ],
+  "phase": "II-mechanistic",
+  "objective": "physical T4 discrimination from T1 bank -> T2 -> T4",
+  "source_run": "R04_random",
+  "source_converged": true,
+  "physical_layout": [
+    1.2250000245046586,
+    -0.12700562434556834,
+    2.9249998459166284,
+    -0.24997590969384686
+  ],
+  "physical_D_tau": 0.22856304049491882,
+  "physical_hard_min": 0.15370383858680725,
+  "physical_n_eff": 23.477612610907606,
+  "physical_top1_weight": 0.17105880925728997,
+  "physical_top10_weight": 0.663958754463771,
+  "physical_hardest_pair_deg": [
+    59.0,
+    67.0
+  ],
+  "physical_critical_pair_distance": 0.18811719119548798,
+  "physical_separation": 1.7044415753786828,
+  "distance_to_s_star_surrogate_v2": 0.13400930697675206,
+  "distance_to_s_star_surrogate_v1": 0.4823982106496998,
+  "tau": 0.013181559683216354,
+  "delta_alpha_min_deg": 7.5,
+  "immutability": "Mechanistically refined design. Distinct from both surrogate proposals, which remain unmodified.",
+  "git_commit": "522d83d3d4495dc266c1bcaba47278a90274209e-dirty"
+}

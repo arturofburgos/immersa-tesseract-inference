@@ -1,0 +1,35 @@
+{
+  "n_layouts": 10000,
+  "seed": 0,
+  "grid_size": 66,
+  "tau": 0.013903220697394284,
+  "D_baseline": 0.1438700258731842,
+  "D_star_v2": 0.23333828151226044,
+  "random_best": 0.22862929105758667,
+  "random_median": 0.1357676312327385,
+  "random_p95": 0.18277023062109948,
+  "random_p99": 0.20122603461146354,
+  "random_p999": 0.21792311421036725,
+  "s_star_v2_rank": 1,
+  "n_random_beating_s_star_v2": 0,
+  "s_star_v2_percentile": 100.0,
+  "fraction_beating_baseline": 0.3816,
+  "matched_budget": [
+    {
+      "comparison": "equal_candidates_best_run",
+      "budget_candidates": 53,
+      "random_best_median": 0.19931378960609436,
+      "random_best_p95": 0.21905353665351868,
+      "gradient_D": 0.23333828151226044,
+      "fraction_beating_gradient": 0.0
+    },
+    {
+      "comparison": "equal_candidates_median_run",
+      "budget_candidates": 46,
+      "random_best_median": 0.19765064120292664,
+      "random_best_p95": 0.2171411521732807,
+      "gradient_D": 0.23333828151226044,
+      "fraction_beating_gradient": 0.0
+    }
+  ]
+}
