@@ -1,0 +1,126 @@
+{
+  "status": "DIAGNOSTIC ONLY. 63 deg was opened in Phase I and lies on the Phase-II design grid, so this is not a held-out result. The preregistered off-grid holdouts remain unevaluated.",
+  "alpha_true_deg": 63.0,
+  "layouts": {
+    "baseline": {
+      "global_minimum_alpha_deg": 63.0,
+      "global_minimum_is_truth": true,
+      "objective_at_truth": 0.0,
+      "all_local_minima_deg": [
+        27.0,
+        42.0,
+        51.0,
+        63.0,
+        83.0
+      ],
+      "false_minima_deg": [
+        27.0,
+        42.0,
+        51.0,
+        83.0
+      ],
+      "n_false_minima": 4,
+      "best_false_minimum_alpha_deg": 83.0,
+      "best_false_minimum_value": 0.04781574937843525,
+      "true_to_best_false_margin": 0.04781574937843525,
+      "layout": [
+        1.0,
+        -0.4,
+        1.0,
+        0.4
+      ]
+    },
+    "s_star_surrogate_v1": {
+      "global_minimum_alpha_deg": 63.0,
+      "global_minimum_is_truth": true,
+      "objective_at_truth": 0.0,
+      "all_local_minima_deg": [
+        26.0,
+        42.0,
+        51.0,
+        63.0,
+        83.0
+      ],
+      "false_minima_deg": [
+        26.0,
+        42.0,
+        51.0,
+        83.0
+      ],
+      "n_false_minima": 4,
+      "best_false_minimum_alpha_deg": 83.0,
+      "best_false_minimum_value": 0.049656601397585015,
+      "true_to_best_false_margin": 0.049656601397585015,
+      "layout": [
+        1.0,
+        -0.16925565522512323,
+        2.588428679688709,
+        0.008902068445642432
+      ]
+    },
+    "s_star_surrogate_v2": {
+      "global_minimum_alpha_deg": 63.0,
+      "global_minimum_is_truth": true,
+      "objective_at_truth": 0.0,
+      "all_local_minima_deg": [
+        27.0,
+        42.0,
+        51.0,
+        63.0,
+        83.0
+      ],
+      "false_minima_deg": [
+        27.0,
+        42.0,
+        51.0,
+        83.0
+      ],
+      "n_false_minima": 4,
+      "best_false_minimum_alpha_deg": 83.0,
+      "best_false_minimum_value": 0.08834067570320682,
+      "true_to_best_false_margin": 0.08834067570320682,
+      "layout": [
+        1.1734798140427871,
+        -0.10897239002828665,
+        2.9658056005496967,
+        -0.13459022982308613
+      ]
+    },
+    "s_star_cfd_refined": {
+      "global_minimum_alpha_deg": 63.0,
+      "global_minimum_is_truth": true,
+      "objective_at_truth": 0.0,
+      "all_local_minima_deg": [
+        23.0,
+        27.0,
+        41.0,
+        51.0,
+        63.0,
+        84.0
+      ],
+      "false_minima_deg": [
+        23.0,
+        27.0,
+        41.0,
+        51.0,
+        84.0
+      ],
+      "n_false_minima": 5,
+      "best_false_minimum_alpha_deg": 84.0,
+      "best_false_minimum_value": 0.09171835419234561,
+      "true_to_best_false_margin": 0.09171835419234561,
+      "layout": [
+        1.2250000245046586,
+        -0.12700562434556834,
+        2.9249998459166284,
+        -0.24997590969384686
+      ]
+    }
+  },
+  "margin_factor_vs_baseline": {
+    "baseline": 1.0,
+    "s_star_surrogate_v1": 1.03849886372334,
+    "s_star_surrogate_v2": 1.8475225600677958,
+    "s_star_cfd_refined": 1.9181620153319252
+  }
+}
