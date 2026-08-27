@@ -1,0 +1,60 @@
+{
+  "alpha_true_deg": 63.0,
+  "initial_angles_deg": [
+    35.0,
+    40.0,
+    45.0,
+    50.0,
+    55.0,
+    60.0,
+    65.0,
+    70.0,
+    75.0,
+    80.0
+  ],
+  "gradient_route": "tesseract",
+  "baseline": {
+    "source": "results/identifiability/multistart/Ns2.csv",
+    "rerun": false,
+    "successes": 7,
+    "total": 10
+  },
+  "layouts": {
+    "s_star_surrogate_v2": {
+      "layout": [
+        1.1734798140427871,
+        -0.10897239002828665,
+        2.9658056005496967,
+        -0.13459022982308613
+      ],
+      "successes": 7,
+      "total": 10,
+      "basins": {
+        "low_basin_27": 1,
+        "mid_basin_42": 1,
+        "true_basin": 7,
+        "high_basin_83": 1
+      },
+      "median_iterations": 5.5,
+      "max_absolute_error_deg": 0.0003595008237766706
+    },
+    "s_star_cfd_refined": {
+      "layout": [
+        1.2250000245046586,
+        -0.12700562434556834,
+        2.9249998459166284,
+        -0.24997590969384686
+      ],
+      "successes": 8,
+      "total": 10,
+      "basins": {
+        "low_basin_27": 1,
+        "mid_basin_42": 1,
+        "true_basin": 8
+      },
+      "median_iterations": 5.0,
+      "max_absolute_error_deg": 0.00032073345075644966
+    }
+  },
+  "wall_time_s": 2793.9126097609987
+}
