@@ -1,0 +1,159 @@
+{
+  "experiment": "sensor budget versus sensor placement",
+  "question": "Given a fixed sensing budget, how much does differentiably optimized placement matter compared with simply adding probes?",
+  "recorded_before_optimization": true,
+  "sensor_counts": [
+    1,
+    2,
+    3,
+    5,
+    8
+  ],
+  "naive_family": {
+    "description": "Conventional vertically aligned wake probes at x = 1, the family used by the committed identifiability study.",
+    "layouts_y": {
+      "1": [
+        0.0
+      ],
+      "2": [
+        -0.4,
+        0.4
+      ],
+      "3": [
+        -0.4,
+        0.0,
+        0.4
+      ],
+      "5": [
+        -0.8,
+        -0.4,
+        0.0,
+        0.4,
+        0.8
+      ],
+      "8": [
+        -0.9,
+        -0.642857,
+        -0.385714,
+        -0.128571,
+        0.128571,
+        0.385714,
+        0.642857,
+        0.9
+      ]
+    },
+    "x_position": 1.0,
+    "ns8_note": "The committed family uses a 0.4 pitch centred on zero. That rule cannot reach 8 probes inside y in [-1, 1], so Ns=8 is defined as 8 evenly spaced probes spanning [-0.9, 0.9]. This is deliberately generous to the naive baseline: it gives it more coverage than the Ns=5 span, so the comparison does not understate what naive probes achieve.",
+    "committed_source": "scripts/identifiability/run_5time_nonuniform_multistart_Ns{1,2,3,5}.py"
+  },
+  "optimized_family": {
+    "method": "T3 WakeSurrogate -> T4 SensorArrayDesign, reverse-mode gradient (T4 VJP -> T3 VJP), L-BFGS-B with box bounds. No CFD enters the design loop.",
+    "design_grid_deg": [
+      20.0,
+      21.0,
+      22.0,
+      23.0,
+      24.0,
+      25.0,
+      26.0,
+      27.0,
+      28.0,
+      29.0,
+      30.0,
+      31.0,
+      32.0,
+      33.0,
+      34.0,
+      35.0,
+      36.0,
+      37.0,
+      38.0,
+      39.0,
+      40.0,
+      41.0,
+      42.0,
+      43.0,
+      44.0,
+      45.0,
+      46.0,
+      47.0,
+      48.0,
+      49.0,
+      50.0,
+      51.0,
+      52.0,
+      53.0,
+      54.0,
+      55.0,
+      56.0,
+      57.0,
+      58.0,
+      59.0,
+      60.0,
+      61.0,
+      62.0,
+      63.0,
+      64.0,
+      65.0,
+      66.0,
+      67.0,
+      68.0,
+      69.0,
+      70.0,
+      71.0,
+      72.0,
+      73.0,
+      74.0,
+      75.0,
+      76.0,
+      77.0,
+      78.0,
+      79.0,
+      80.0,
+      81.0,
+      82.0,
+      83.0,
+      84.0,
+      85.0
+    ],
+    "delta_alpha_min_deg": 7.5,
+    "bounds": {
+      "x": [
+        1.0,
+        3.0
+      ],
+      "y": [
+        -1.0,
+        1.0
+      ]
+    },
+    "min_pairwise_separation": 0.2,
+    "n_starts_per_budget": 10,
+    "random_seed": 0,
+    "tie_tolerance": 1e-06
+  },
+  "tau_protocol": {
+    "optimization": "per sensor count, solved so the soft-minimum weight perplexity N_eff = 10 at that count's NAIVE layout, then frozen for that count's campaign",
+    "cross_count_comparison": "D_tau depends on tau, so values calibrated per count are NOT comparable across counts. Cross-count claims use (a) the hard minimum retained pair distance, which is tau-free, and (b) D_tau at a single common tau calibrated at the Ns=2 naive layout."
+  },
+  "primary_metric": {
+    "name": "hard minimum retained pair distance on real CFD",
+    "definition": "min over retained pairs of ||m_i - m_j||^2 / (Ns*5*2)",
+    "why": "Normalised per scalar measurement, so it is directly comparable across sensor counts, and tau-free."
+  },
+  "evaluation": {
+    "source": "existing 66-angle real-CFD bank (T1 -> T2), no new CFD",
+    "angles_deg": "integers 20..85"
+  },
+  "prespecified_headline_test": "Does Ns=2 optimized match or exceed Ns=5 naive on the real-CFD hard minimum? Recorded as a prediction before the optimization was run.",
+  "terminology": "Reported as global discrimination / measurement discrimination. No information-theoretic claim is made.",
+  "out_of_scope": [
+    "new CFD",
+    "mesh refinement",
+    "T3 retraining",
+    "changes to T1-T4 mathematics",
+    "physical (CFD-in-the-loop) refinement of the ablation designs",
+    "inverse recovery rates"
+  ],
+  "git_commit": "41f83bdcd8fab9223e52cd840ece266e148a3589-dirty"
+}
