@@ -1,0 +1,109 @@
+{
+  "description": "Sealed unseen physical truths. These three angles were preregistered before Phase-II optimization and evaluated here for the first time. They are stored separately from the main bank so their held-out status stays unambiguous.",
+  "preregistration": "results/sensor_design/refined_design/phase2_preregistration.json",
+  "holdout_alphas_deg": [
+    33.5,
+    58.5,
+    74.5
+  ],
+  "configuration": {
+    "h": 0.05,
+    "dt": 0.0025,
+    "tf": 20.0,
+    "Re": 200.0,
+    "snapshot_freq": 40,
+    "observation_times": [
+      12.0,
+      13.3,
+      15.1,
+      17.4,
+      20.0
+    ]
+  },
+  "provenance": {
+    "source": "ImmersaForward Tesseract (T1)",
+    "image": "immersa_tesseract_inference_immersa_forward",
+    "immersa_commit": "62810dcff9418d6fface55dd34b5f1b914ffa743"
+  },
+  "storage": {
+    "directory": "data/cfd_holdout_bank",
+    "gitignored": true,
+    "total_bytes": 1926554,
+    "total_megabytes": 1.926554
+  },
+  "build": {
+    "n_solves": 3,
+    "wall_time_s": 115.42540464500053
+  },
+  "entries": [
+    {
+      "angle_of_attack_deg": 33.5,
+      "file": "alpha_033p500.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 640901
+    },
+    {
+      "angle_of_attack_deg": 58.5,
+      "file": "alpha_058p500.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 642462
+    },
+    {
+      "angle_of_attack_deg": 74.5,
+      "file": "alpha_074p500.npz",
+      "stored_times": [
+        12.0,
+        13.3,
+        15.1,
+        17.400000000000002,
+        20.0
+      ],
+      "max_time_offset": 3.552713678800501e-15,
+      "ux_shape": [
+        141,
+        60,
+        5
+      ],
+      "uy_shape": [
+        140,
+        61,
+        5
+      ],
+      "bytes": 643191
+    }
+  ]
+}

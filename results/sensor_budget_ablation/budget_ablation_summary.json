@@ -1,0 +1,217 @@
+{
+  "experiment": "sensor budget versus sensor placement",
+  "no_new_cfd": true,
+  "evaluation_source": "existing 66-angle real-CFD bank",
+  "common_tau": 0.013181559683216354,
+  "reference_count_for_common_tau": 2,
+  "designs": {
+    "Ns1_naive": [
+      1.0,
+      0.0
+    ],
+    "Ns1_optimized": [
+      2.598431759010031,
+      0.03308932982601267
+    ],
+    "Ns2_naive": [
+      1.0,
+      -0.4,
+      1.0,
+      0.4
+    ],
+    "Ns2_optimized": [
+      1.1734985039282178,
+      -0.1089621890489416,
+      2.9657926978363784,
+      -0.13459077692389823
+    ],
+    "Ns3_naive": [
+      1.0,
+      -0.4,
+      1.0,
+      0.0,
+      1.0,
+      0.4
+    ],
+    "Ns3_optimized": [
+      1.1931786653893155,
+      -0.08183101341640142,
+      2.711470015429589,
+      -0.32225560004311493,
+      2.9945497532149052,
+      -0.12179688518053243
+    ],
+    "Ns5_naive": [
+      1.0,
+      -0.8,
+      1.0,
+      -0.4,
+      1.0,
+      0.0,
+      1.0,
+      0.4,
+      1.0,
+      0.8
+    ],
+    "Ns5_optimized": [
+      1.0,
+      -0.1566235311259566,
+      1.2306628596454234,
+      -0.13491526484997707,
+      2.6945099829896257,
+      -0.34432428551019323,
+      2.9907382966271663,
+      -0.11374020204771133,
+      3.0,
+      -0.3135125350717936
+    ],
+    "Ns8_naive": [
+      1.0,
+      -0.9,
+      1.0,
+      -0.642857,
+      1.0,
+      -0.385714,
+      1.0,
+      -0.128571,
+      1.0,
+      0.128571,
+      1.0,
+      0.385714,
+      1.0,
+      0.642857,
+      1.0,
+      0.9
+    ],
+    "Ns8_optimized": [
+      1.0,
+      -0.12392055914453973,
+      1.1963828006899433,
+      -0.08637204889784977,
+      1.5408717419661606,
+      0.1203473041353791,
+      2.6375710285934675,
+      -0.3483594824965571,
+      2.805459331601156,
+      -0.45900620548467563,
+      2.8174840800523966,
+      -0.2590591300399329,
+      2.985134475393437,
+      -0.15003176624535744,
+      2.9956539076597886,
+      -0.3497161090359279
+    ]
+  },
+  "headline": {
+    "ns2_optimized_hard_min": 0.1229311153292656,
+    "ns5_naive_hard_min": 0.058271680027246475,
+    "ns8_naive_hard_min": 0.05660237744450569,
+    "ns2_optimized_beats_ns5_naive": true,
+    "ns2_optimized_beats_ns8_naive": true,
+    "ns1_optimized_hard_min": 0.09596425294876099,
+    "ns1_optimized_beats_ns5_naive": true
+  },
+  "gradient_scaling": [
+    {
+      "n_sensors": 1,
+      "design_dimension": 2,
+      "reverse_mode_seconds": 0.7893452380012604,
+      "central_difference_seconds": 0.6825195549972705,
+      "central_difference_objective_evaluations": 4,
+      "speedup": 0.8646654494622803
+    },
+    {
+      "n_sensors": 2,
+      "design_dimension": 4,
+      "reverse_mode_seconds": 0.7746386590006296,
+      "central_difference_seconds": 1.3623821700020926,
+      "central_difference_objective_evaluations": 8,
+      "speedup": 1.7587324801988553
+    },
+    {
+      "n_sensors": 3,
+      "design_dimension": 6,
+      "reverse_mode_seconds": 0.7888975469977595,
+      "central_difference_seconds": 2.1127399260003585,
+      "central_difference_objective_evaluations": 12,
+      "speedup": 2.678091640721452
+    },
+    {
+      "n_sensors": 5,
+      "design_dimension": 10,
+      "reverse_mode_seconds": 0.7790636199933942,
+      "central_difference_seconds": 3.445635725001921,
+      "central_difference_objective_evaluations": 20,
+      "speedup": 4.422791202894492
+    },
+    {
+      "n_sensors": 8,
+      "design_dimension": 16,
+      "reverse_mode_seconds": 0.7903799699997762,
+      "central_difference_seconds": 5.584513521003828,
+      "central_difference_objective_evaluations": 32,
+      "speedup": 7.065606079320822
+    }
+  ],
+  "wall_time_s": 6586.3559985169995,
+  "git_commit": "41f83bdcd8fab9223e52cd840ece266e148a3589-dirty",
+  "complementary_views": {
+    "note": "Per-scalar hard minimum measures discrimination efficiency per measurement; total squared separation measures the raw basin depth of the inverse objective. Both are reported because the headline claim depends on which is used.",
+    "per_scalar": {
+      "1": {
+        "naive": 0.0710778683423996,
+        "optimized": 0.09596425294876099
+      },
+      "2": {
+        "naive": 0.07224367558956146,
+        "optimized": 0.1229311153292656
+      },
+      "3": {
+        "naive": 0.07258334010839462,
+        "optimized": 0.1280248612165451
+      },
+      "5": {
+        "naive": 0.058271680027246475,
+        "optimized": 0.1274833083152771
+      },
+      "8": {
+        "naive": 0.05660237744450569,
+        "optimized": 0.12547995150089264
+      }
+    },
+    "total": {
+      "1": {
+        "naive": 0.710778683423996,
+        "optimized": 0.9596425294876099
+      },
+      "2": {
+        "naive": 1.4448735117912292,
+        "optimized": 2.458622306585312
+      },
+      "3": {
+        "naive": 2.1775002032518387,
+        "optimized": 3.840745836496353
+      },
+      "5": {
+        "naive": 2.9135840013623238,
+        "optimized": 6.374165415763855
+      },
+      "8": {
+        "naive": 4.528190195560455,
+        "optimized": 10.038396120071411
+      }
+    },
+    "committed_naive_recovery_out_of_10": {
+      "1": 8,
+      "2": 7,
+      "3": 7,
+      "5": 7
+    },
+    "metric_justification": "Committed noise-free multistart recovery for the naive family is 8, 7, 7, 7 for Ns = 1, 2, 3, 5: flat to slightly declining. Total squared separation rises monotonically over the same budgets, so it plainly does not predict recovery. The per-scalar metric is flat then declining, which is at least consistent with the observed rates. With four budgets and three tied recovery values this cannot establish that the per-scalar metric is predictive -- it only rules the total view out as a proxy for identifiability in this problem.",
+    "headline_depends_on_metric": {
+      "per_scalar": "Ns=2 optimized (0.122931) exceeds Ns=5 naive (0.058272) and Ns=8 naive (0.056602); even Ns=1 optimized (0.095964) exceeds both.",
+      "total": "Ns=2 optimized (2.4586) does NOT exceed Ns=5 naive (2.9136) or Ns=8 naive (4.5282). On raw basin depth, more probes still win.",
+      "honest_statement": "Optimized placement dominates naive placement at every budget on both views. The stronger claim -- that two optimized probes beat five or eight naive ones -- holds per measurement, not in raw basin depth."
+    }
+  }
+}
