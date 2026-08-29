@@ -22,6 +22,11 @@ Panel C needs the surrogate objective at each stored iterate, which the replays
 did not record. It is evaluated once here -- a read-out of the frozen objective
 at coordinates that already exist -- and cached, so no optimization is repeated.
 
+Panel A animates the wake across the whole simulation while B2/B3 advance
+through optimization iterates. The two are independent quantities sharing one
+normalized 0-100% frame index; they are not physically synchronized. The B-panel
+backgrounds are fixed at the final snapshot, so only the probes move there.
+
     python scripts/budget_ablation/plot_hero_multistart_story.py
 """
 
@@ -71,7 +76,7 @@ DESIGN_NX, DESIGN_NY = 520, 440
 MOTION_FRAMES = 40
 FRAME_MS = 150
 HOLD_MS = 1500
-GIF_DPI = 95
+GIF_DPI = 70
 
 
 def interpolate(data: dict, nx: int, ny: int) -> tuple[np.ndarray, ...]:
@@ -98,19 +103,36 @@ def interpolate(data: dict, nx: int, ny: int) -> tuple[np.ndarray, ...]:
 
 
 def load_field() -> dict:
-    """Both display grids from the single presentation render."""
+    """Panel A over the whole run, plus the fixed design-panel background.
+
+    Panel A animates: one vorticity frame per stored CFD snapshot. The B panels
+    are deliberately static and always show the final snapshot, so only probe
+    positions move there.
+    """
     if not FIELD.exists():
         raise SystemExit(f"{FIELD} is missing; build it before plotting.")
 
     with np.load(FIELD, allow_pickle=False) as data:
-        payload = {
-            key: data[key] for key in ("ux", "uy", "ux_x", "ux_y", "uy_x", "uy_y")
-        }
-        time = float(data["time"])
+        ux_series = np.asarray(data["ux"], dtype=np.float64)
+        uy_series = np.asarray(data["uy"], dtype=np.float64)
+        grids = {key: data[key] for key in ("ux_x", "ux_y", "uy_x", "uy_y")}
+        times = np.asarray(data["times"], dtype=np.float64)
         spacing = float(data["h"])
 
-    cx, cy, _, context_omega = interpolate(payload, CONTEXT_NX, CONTEXT_NY)
-    dx, dy, design_ux, _ = interpolate(payload, DESIGN_NX, DESIGN_NY)
+    def snapshot(index: int) -> dict:
+        return {**grids, "ux": ux_series[:, :, index], "uy": uy_series[:, :, index]}
+
+    omegas = []
+    for index in range(times.size):
+        cx, cy, _, omega = interpolate(snapshot(index), CONTEXT_NX, CONTEXT_NY)
+        omegas.append(omega)
+
+    # One symmetric colour range for the whole sequence, so the animation does
+    # not rescale itself frame to frame.
+    omega_limit = float(np.percentile(np.abs(np.stack(omegas)), 99.0))
+
+    # The design panels stay on the final snapshot.
+    dx, dy, design_ux, _ = interpolate(snapshot(times.size - 1), DESIGN_NX, DESIGN_NY)
 
     inside_x = (dx >= DESIGN_X[0]) & (dx <= DESIGN_X[1])
     inside_y = (dy >= DESIGN_Y[0]) & (dy <= DESIGN_Y[1])
@@ -119,14 +141,15 @@ def load_field() -> dict:
     return {
         "context_x": cx,
         "context_y": cy,
-        "omega": context_omega,
-        "omega_limit": float(np.percentile(np.abs(context_omega), 99.0)),
+        "omega_series": omegas,
+        "omega_limit": omega_limit,
+        "times": times,
         "design_x": dx,
         "design_y": dy,
         "ux": design_ux,
         "ux_low": float(np.percentile(crop, 1.0)),
         "ux_high": float(np.percentile(crop, 99.0)),
-        "time": time,
+        "time": float(times[-1]),
         "h": spacing,
     }
 
@@ -229,13 +252,17 @@ def objective_histories(story: dict) -> dict:
     return histories
 
 
-def draw_wake(ax: plt.Axes, field: dict, *, context: bool) -> None:
-    """Shared wake rendering: vorticity for context, ux for the design panels."""
+def draw_wake(ax: plt.Axes, field: dict, *, context: bool, frame: int = -1) -> None:
+    """Shared wake rendering: vorticity for context, ux for the design panels.
+
+    ``frame`` selects the Panel A snapshot and is ignored by the design panels,
+    whose background is fixed at the final snapshot.
+    """
     if context:
         ax.pcolormesh(
             field["context_x"],
             field["context_y"],
-            field["omega"].T,
+            field["omega_series"][frame].T,
             cmap="RdBu_r",
             vmin=-field["omega_limit"],
             vmax=field["omega_limit"],
@@ -363,9 +390,9 @@ def draw_traces(ax: plt.Axes, path: np.ndarray, upto: int, color: str) -> None:
         )
 
 
-def draw_context(ax: plt.Axes, field: dict) -> None:
+def draw_context(ax: plt.Axes, field: dict, frame: int = -1) -> None:
     """Panel A: the wake plus the box the probes are designed in."""
-    draw_wake(ax, field, context=True)
+    draw_wake(ax, field, context=True, frame=frame)
 
     ax.add_patch(
         Rectangle(
@@ -394,7 +421,7 @@ def draw_context(ax: plt.Axes, field: dict) -> None:
         ax,
         "(A)",
         "Representative real-CFD wake",
-        rf"$\alpha={ALPHA_DEG:g}^\circ$, $t={field['time']:.0f}$   "
+        rf"$\alpha={ALPHA_DEG:g}^\circ$, $t={field['times'][frame]:.1f}$   "
         rf"(vorticity; probes measure $u_x,u_y$)",
         TEXT_COLOR,
     )
@@ -491,6 +518,8 @@ def render(
     histories: dict,
     naive_upto: int,
     winner_upto: int,
+    context_frame: int = -1,
+    animated: bool = False,
 ) -> None:
     """Draw the whole composition at one point along the timeline."""
     grid = fig.add_gridspec(
@@ -509,7 +538,7 @@ def render(
     ax_objective = fig.add_subplot(grid[0, 2])
     axes_b = [fig.add_subplot(grid[1, column]) for column in range(3)]
 
-    draw_context(ax_context, field)
+    draw_context(ax_context, field, context_frame)
     draw_objective(ax_objective, histories, story, naive_upto, winner_upto)
 
     for ax in axes_b:
@@ -575,14 +604,20 @@ def render(
         fontsize=12.5,
         color=MUTED,
     )
+    # The still shows one instant; the animation sweeps the whole run on an
+    # index that is independent of the optimizer iteration.
+    wake_note = (
+        r"$^\circ$ rendering at $h=0.02$ for visualization only; panel (A) "
+        r"spans $t=0$-$20$ on a timeline independent of the optimizer panels."
+        if animated
+        else r"$^\circ$, $t=20$ rendering at $h=0.02$ for visualization only."
+    )
     fig.text(
         0.5,
         0.022,
         "Probe trajectories: actual optimizer iterates from the frozen "
         r"$h=0.05$ T3$\to$T4 campaign over the AoA design set." + "\n"
-        "Wake: representative "
-        f"{ALPHA_DEG:g}" + r"$^\circ$, $t=20$ rendering at $h=0.02$ "
-        "for visualization only.",
+        "Wake: representative " + f"{ALPHA_DEG:g}" + wake_note,
         ha="center",
         fontsize=10.2,
         linespacing=1.5,
@@ -607,12 +642,16 @@ def main() -> None:
 
     print(f"  iterates: naive {naive_last + 1}, winner {winner_last + 1}")
     print(f"  ux display range: {field['ux_low']:.3f} .. {field['ux_high']:.3f}")
+    print(
+        f"  panel A snapshots: {len(field['omega_series'])} over "
+        f"t = {field['times'][0]:g} .. {field['times'][-1]:g}"
+    )
 
     written: list[Path] = []
 
     # ---- static: both trajectories complete ----
     fig = plt.figure(figsize=(15.5, 8.8))
-    render(fig, field, story, histories, naive_last, winner_last)
+    render(fig, field, story, histories, naive_last, winner_last, context_frame=-1)
     for suffix, kwargs in ((".png", {"dpi": 150}), (".pdf", {})):
         path = FIGURE_DIR / f"{STEM}{suffix}"
         fig.savefig(path, facecolor="white", **kwargs)
@@ -620,15 +659,30 @@ def main() -> None:
     plt.close(fig)
 
     # ---- animation on a normalized 0-100% timeline ----
+    # Panel A's simulation time and the optimizer iteration are independent
+    # quantities; the shared 0-100% index is a presentation device only.
+    context_last = len(field["omega_series"]) - 1
     steps = [index / (MOTION_FRAMES - 1) for index in range(MOTION_FRAMES)]
-    sequence = [(round(p * naive_last), round(p * winner_last)) for p in steps]
+    sequence = [
+        (round(p * naive_last), round(p * winner_last), round(p * context_last))
+        for p in steps
+    ]
 
     fig = plt.figure(figsize=(15.5, 8.8), dpi=GIF_DPI)
 
     captured = []
-    for naive_upto, winner_upto in sequence:
+    for naive_upto, winner_upto, context_frame in sequence:
         fig.clear()
-        render(fig, field, story, histories, naive_upto, winner_upto)
+        render(
+            fig,
+            field,
+            story,
+            histories,
+            naive_upto,
+            winner_upto,
+            context_frame,
+            animated=True,
+        )
         fig.canvas.draw()
         captured.append(
             Image.fromarray(np.asarray(fig.canvas.buffer_rgba())[..., :3].copy())

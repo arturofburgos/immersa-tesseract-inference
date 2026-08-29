@@ -1,4 +1,4 @@
-"""One presentation-only ImmersaForward render at h = 0.02.
+"""One presentation-only ImmersaForward render at h = 0.02, full time series.
 
 PRESENTATION ONLY. This field exists solely to give the hero figure a sharper
 wake background. It is deliberately kept out of data/cfd_validation_bank/, is
@@ -12,8 +12,10 @@ reduced to hold the convective CFL number fixed:
     production      h = 0.05   dt = 0.0025   U dt / h = 0.05
     visualization   h = 0.02   dt = 0.0010   U dt / h = 0.05
 
-snapshot_freq = 4000 makes the final stored snapshot land exactly on t = 20.0
-(step 20000), which is the only frame the hero uses.
+snapshot_freq = 500 stores a snapshot every 0.5 s, so the run yields 41 frames
+over t = 0 .. 20 and the last one lands exactly on t = 20.0 (step 20000). The
+hero animates Panel A across the whole sequence and uses the final frame for the
+static still.
 
     python scripts/budget_ablation/build_hero_visualization_field.py
 """
@@ -30,9 +32,9 @@ H = 0.02
 DT = 0.001
 TF = 20.0
 RE = 200.0
-SNAPSHOT_FREQ = 4000
+SNAPSHOT_FREQ = 500
 
-TARGET_TIME = 20.0
+FINAL_TIME = 20.0
 
 # Alongside the other data assets; data/ is gitignored, so this large
 # presentation asset does not ship with the repository.
@@ -73,19 +75,17 @@ def main() -> None:
 
     times = np.asarray(flow["times"], dtype=np.float64)
 
-    index = int(np.argmin(np.abs(times - TARGET_TIME)))
-    time_error = float(abs(times[index] - TARGET_TIME))
+    time_error = float(abs(times[-1] - FINAL_TIME))
 
     print(f"  solve wall time : {elapsed / 60.0:.2f} min")
-    print(f"  stored times    : {np.round(times, 6).tolist()}")
-    print(f"  selected index  : {index} at t = {times[index]:.6f}")
-    print(f"  |t - {TARGET_TIME:g}|      : {time_error:.3e}")
+    print(f"  stored snapshots: {times.size} over t = {times[0]:g} .. {times[-1]:g}")
+    print(f"  |t_final - {FINAL_TIME:g}| : {time_error:.3e}")
 
     if time_error > 1.0e-9:
-        raise SystemExit(f"No snapshot lands on t = {TARGET_TIME}; got {times[index]}.")
+        raise SystemExit(f"Last snapshot is not t = {FINAL_TIME}; got {times[-1]}.")
 
-    ux = np.asarray(flow["ux"], dtype=np.float64)[:, :, index]
-    uy = np.asarray(flow["uy"], dtype=np.float64)[:, :, index]
+    ux = np.asarray(flow["ux"], dtype=np.float64)
+    uy = np.asarray(flow["uy"], dtype=np.float64)
 
     np.savez_compressed(
         OUTPUT,
@@ -95,7 +95,7 @@ def main() -> None:
         ux_y=np.asarray(flow["ux_y"], dtype=np.float64),
         uy_x=np.asarray(flow["uy_x"], dtype=np.float64),
         uy_y=np.asarray(flow["uy_y"], dtype=np.float64),
-        time=times[index],
+        times=times,
         angle_of_attack_deg=ALPHA_DEG,
         h=H,
         dt=DT,
@@ -111,8 +111,8 @@ def main() -> None:
         ),
     )
 
-    print(f"  ux shape        : {ux.shape}")
-    print(f"  uy shape        : {uy.shape}")
+    print(f"  ux shape        : {ux.shape}   (nx, ny, n_time)")
+    print(f"  uy shape        : {uy.shape}   (nx, ny, n_time)")
     print(f"  file size       : {OUTPUT.stat().st_size / 1e6:.2f} MB")
     print(f"\nWrote {OUTPUT}")
 
