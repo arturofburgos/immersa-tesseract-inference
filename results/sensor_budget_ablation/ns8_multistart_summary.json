@@ -1,0 +1,440 @@
+{
+  "experiment": "matched Ns=8 multistart inverse recovery",
+  "question": "Does the frozen optimized Ns=8 placement translate its higher real-CFD discrimination into a larger recovery basin and/or fewer inverse iterations, at an identical sensing budget?",
+  "independent_variable": "sensor placement only",
+  "alpha_true_deg": 63.0,
+  "initial_angles_deg": [
+    35.0,
+    40.0,
+    45.0,
+    50.0,
+    55.0,
+    60.0,
+    65.0,
+    70.0,
+    75.0,
+    80.0
+  ],
+  "methodology_source": "damped Gauss-Newton multistart methodology following the committed 5-time nonuniform identifiability implementation in scripts/identifiability/run_5time_nonuniform_multistart_Ns2.py",
+  "layout_source": "results/sensor_budget_ablation/budget_ablation_summary.json",
+  "solver": {
+    "name": "damped Gauss-Newton with backtracking line search",
+    "entrypoint": "immersa_tesseract_inference.inverse.infer_angle_of_attack",
+    "sensitivity_backend": "finite_difference",
+    "epsilon_deg": 0.5,
+    "max_step_deg": 10.0,
+    "max_iterations": 20,
+    "damping": 1e-12,
+    "max_backtracks": 6,
+    "objective_tolerance": 1e-10,
+    "gradient_tolerance": 1e-08,
+    "step_tolerance_deg": 0.001,
+    "angle_bounds_deg": [
+      0.0,
+      90.0
+    ],
+    "iteration_definition": "len(history); one entry per Gauss-Newton step"
+  },
+  "cfd": {
+    "h": 0.05,
+    "dt": 0.0025,
+    "tf": 20.0,
+    "Re": 200.0,
+    "snapshot_freq": 40,
+    "observation_times": [
+      12.0,
+      13.3,
+      15.1,
+      17.4,
+      20.0
+    ],
+    "candidate_angles": "solved live by ImmersaForward, as in the committed study"
+  },
+  "success_criterion": {
+    "rule": "nearest known landscape minimum must be the true basin",
+    "known_minima_deg": {
+      "low_basin_27": 27.0,
+      "mid_basin_42": 42.0,
+      "mid_basin_51": 51.0,
+      "true_basin": 63.0,
+      "high_basin_83": 83.0
+    }
+  },
+  "truth_field": {
+    "solved_live": true,
+    "solve_minutes": 0.8874067129666704,
+    "frozen_bank_entry": "data/cfd_validation_bank/alpha_063p000.npz",
+    "live_vs_bank_max_absolute_difference": {
+      "conventional": 0.0,
+      "optimized": 0.0
+    }
+  },
+  "aggregate": {
+    "conventional": {
+      "layout": [
+        1.0,
+        -0.9,
+        1.0,
+        -0.642857,
+        1.0,
+        -0.385714,
+        1.0,
+        -0.128571,
+        1.0,
+        0.128571,
+        1.0,
+        0.385714,
+        1.0,
+        0.642857,
+        1.0,
+        0.9
+      ],
+      "successes": 7,
+      "total": 10,
+      "basins": {
+        "low_basin_27": 1,
+        "mid_basin_51": 1,
+        "true_basin": 7,
+        "high_basin_83": 1
+      },
+      "successful_starts_deg": [
+        45.0,
+        50.0,
+        55.0,
+        60.0,
+        65.0,
+        70.0,
+        75.0
+      ],
+      "failed_starts_deg": [
+        35.0,
+        40.0,
+        80.0
+      ],
+      "max_absolute_error_deg": 0.00046199301912253077,
+      "common_success_subset": {
+        "iterations": [
+          6,
+          4,
+          4,
+          3,
+          5,
+          6,
+          9
+        ],
+        "median_iterations": 5.0,
+        "mean_iterations": 5.285714285714286,
+        "forward_evaluations": [
+          18,
+          12,
+          12,
+          9,
+          15,
+          18,
+          27
+        ],
+        "median_forward_evaluations": 15.0,
+        "t1_cfd_solves": [
+          18,
+          12,
+          12,
+          9,
+          15,
+          18,
+          27
+        ],
+        "median_t1_cfd_solves": 15.0
+      }
+    },
+    "optimized": {
+      "layout": [
+        1.0,
+        -0.12392055914453973,
+        1.1963828006899433,
+        -0.08637204889784977,
+        1.5408717419661606,
+        0.1203473041353791,
+        2.6375710285934675,
+        -0.3483594824965571,
+        2.805459331601156,
+        -0.45900620548467563,
+        2.8174840800523966,
+        -0.2590591300399329,
+        2.985134475393437,
+        -0.15003176624535744,
+        2.9956539076597886,
+        -0.3497161090359279
+      ],
+      "successes": 8,
+      "total": 10,
+      "basins": {
+        "low_basin_27": 1,
+        "true_basin": 8,
+        "high_basin_83": 1
+      },
+      "successful_starts_deg": [
+        40.0,
+        45.0,
+        50.0,
+        55.0,
+        60.0,
+        65.0,
+        70.0,
+        75.0
+      ],
+      "failed_starts_deg": [
+        35.0,
+        80.0
+      ],
+      "max_absolute_error_deg": 0.00030884952669651966,
+      "common_success_subset": {
+        "iterations": [
+          6,
+          5,
+          5,
+          4,
+          4,
+          7,
+          9
+        ],
+        "median_iterations": 5.0,
+        "mean_iterations": 5.714285714285714,
+        "forward_evaluations": [
+          18,
+          15,
+          15,
+          12,
+          12,
+          21,
+          27
+        ],
+        "median_forward_evaluations": 15.0,
+        "t1_cfd_solves": [
+          18,
+          15,
+          15,
+          12,
+          12,
+          21,
+          27
+        ],
+        "median_t1_cfd_solves": 15.0
+      }
+    }
+  },
+  "common_success_starts_deg": [
+    45.0,
+    50.0,
+    55.0,
+    60.0,
+    65.0,
+    70.0,
+    75.0
+  ],
+  "rescued_by_optimization_deg": [
+    40.0
+  ],
+  "lost_to_optimization_deg": [],
+  "failed_for_both_deg": [
+    35.0,
+    80.0
+  ],
+  "same_start_trajectory": {
+    "selection_rule": "alpha_0 = 55 deg if it succeeds for both layouts; otherwise the common-success start with minimum absolute distance to 55 deg.",
+    "selected_initial_angle_deg": 55.0,
+    "trajectories": {
+      "conventional": [
+        55.0,
+        59.33041095211575,
+        63.02047025193551,
+        62.99953800698088
+      ],
+      "optimized": [
+        55.0,
+        58.88799780736498,
+        62.582543743427,
+        62.98203309390175,
+        63.00021412023065
+      ]
+    },
+    "iterations": {
+      "conventional": 4,
+      "optimized": 5
+    }
+  },
+  "trajectories_deg": {
+    "conventional": {
+      "35.0": [
+        35.0,
+        28.93977881079922,
+        27.795944738892338,
+        27.146810254809242,
+        26.995496022977953,
+        26.987238926271672
+      ],
+      "40.0": [
+        40.0,
+        41.7741634450853,
+        43.73436527739457,
+        47.61255868227235,
+        51.33228434310509,
+        50.70728434310509
+      ],
+      "45.0": [
+        45.0,
+        48.81786179336055,
+        54.15892945551629,
+        59.804703648695245,
+        62.941138575044455,
+        63.00034497309688
+      ],
+      "50.0": [
+        50.0,
+        60.0,
+        62.923420445470924,
+        63.00018939240152
+      ],
+      "55.0": [
+        55.0,
+        59.33041095211575,
+        63.02047025193551,
+        62.99953800698088
+      ],
+      "60.0": [
+        60.0,
+        62.923420445470924,
+        63.00018939240152
+      ],
+      "65.0": [
+        65.0,
+        63.82739132677128,
+        62.681708625984875,
+        62.989548219950095,
+        63.00016445638677
+      ],
+      "70.0": [
+        70.0,
+        67.01044579710285,
+        65.86913263219739,
+        63.103922103554204,
+        62.995527191419384,
+        63.000076181242235
+      ],
+      "75.0": [
+        75.0,
+        73.91684868393426,
+        72.11035939438662,
+        67.45319911584714,
+        66.31082882285807,
+        64.46176575240295,
+        62.54667628758295,
+        62.9795949468212,
+        63.00027831163328
+      ],
+      "80.0": [
+        80.0,
+        80.10503190306314,
+        80.35167067534223,
+        80.91264060883144,
+        81.84404217722022,
+        82.96737866178525,
+        83.22110309674213,
+        83.24923615753747,
+        83.25083694258193
+      ]
+    },
+    "optimized": {
+      "35.0": [
+        35.0,
+        32.18335136537566,
+        25.216494885080134,
+        25.60793810744302,
+        26.058027091242597,
+        26.39943408472592,
+        26.53925642360655,
+        26.573003460758457,
+        26.57943554305926,
+        26.580590985392984
+      ],
+      "40.0": [
+        40.0,
+        42.95065441032643,
+        41.83641410417743,
+        44.61643744298701,
+        50.97800359596399,
+        50.66550359596399,
+        60.66550359596399,
+        62.72557288566001,
+        62.99228322274766,
+        63.000107510720206
+      ],
+      "45.0": [
+        45.0,
+        50.37069262101351,
+        60.37069262101351,
+        62.64507167118405,
+        62.98683633216072,
+        63.00016916269626
+      ],
+      "50.0": [
+        50.0,
+        60.0,
+        62.560314166826906,
+        62.98023362087385,
+        63.00022857823074
+      ],
+      "55.0": [
+        55.0,
+        58.88799780736498,
+        62.582543743427,
+        62.98203309390175,
+        63.00021412023065
+      ],
+      "60.0": [
+        60.0,
+        62.560314166826906,
+        62.98023362087385,
+        63.00022857823074
+      ],
+      "65.0": [
+        65.0,
+        63.36409036391003,
+        62.95933856954856,
+        63.0003088495267
+      ],
+      "70.0": [
+        70.0,
+        67.4577791893509,
+        66.1022895710807,
+        63.863022297516714,
+        62.740201762088745,
+        62.99316169029498,
+        63.00009639341435
+      ],
+      "75.0": [
+        75.0,
+        73.13004753818669,
+        70.82501409642573,
+        67.61256919357612,
+        66.22296331242545,
+        64.15657572188243,
+        62.60292565327305,
+        62.98364374593422,
+        63.00020005386133
+      ],
+      "80.0": [
+        80.0,
+        80.64517125816788,
+        82.08159577287209,
+        82.83753456846284,
+        83.08717050698212,
+        83.17395918229198,
+        83.204435891863,
+        83.21535058897496,
+        83.21929520156154,
+        83.22072585162783
+      ]
+    }
+  },
+  "wall_time_s": 1919.6186452529946
+}

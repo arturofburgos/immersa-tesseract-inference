@@ -1,0 +1,92 @@
+{
+  "experiment": "matched Ns=8 inverse landscape",
+  "no_new_cfd": true,
+  "evaluation_source": "existing 66-angle real-CFD bank",
+  "objective": "J(alpha) = 0.5*||m(alpha) - m(63)||^2, per scalar",
+  "status": "DIAGNOSTIC ONLY. 63 deg lies on the Phase-II design grid, so this is not a held-out result.",
+  "alpha_true_deg": 63.0,
+  "layout_source": "results/sensor_budget_ablation/budget_ablation_summary.json",
+  "layouts": {
+    "conventional": {
+      "global_minimum_alpha_deg": 63.0,
+      "global_minimum_is_truth": true,
+      "objective_at_truth": 0.0,
+      "all_local_minima_deg": [
+        27.0,
+        51.0,
+        63.0,
+        83.0
+      ],
+      "false_minima_deg": [
+        27.0,
+        51.0,
+        83.0
+      ],
+      "n_false_minima": 3,
+      "best_false_minimum_alpha_deg": 83.0,
+      "best_false_minimum_value": 0.037481794174116026,
+      "true_to_best_false_margin": 0.037481794174116026,
+      "layout": [
+        1.0,
+        -0.9,
+        1.0,
+        -0.642857,
+        1.0,
+        -0.385714,
+        1.0,
+        -0.128571,
+        1.0,
+        0.128571,
+        1.0,
+        0.385714,
+        1.0,
+        0.642857,
+        1.0,
+        0.9
+      ],
+      "n_scalar": 80
+    },
+    "optimized": {
+      "global_minimum_alpha_deg": 63.0,
+      "global_minimum_is_truth": true,
+      "objective_at_truth": 0.0,
+      "all_local_minima_deg": [
+        27.0,
+        42.0,
+        51.0,
+        63.0,
+        83.0
+      ],
+      "false_minima_deg": [
+        27.0,
+        42.0,
+        51.0,
+        83.0
+      ],
+      "n_false_minima": 4,
+      "best_false_minimum_alpha_deg": 83.0,
+      "best_false_minimum_value": 0.08774361265608768,
+      "true_to_best_false_margin": 0.08774361265608768,
+      "layout": [
+        1.0,
+        -0.12392055914453973,
+        1.1963828006899433,
+        -0.08637204889784977,
+        1.5408717419661606,
+        0.1203473041353791,
+        2.6375710285934675,
+        -0.3483594824965571,
+        2.805459331601156,
+        -0.45900620548467563,
+        2.8174840800523966,
+        -0.2590591300399329,
+        2.985134475393437,
+        -0.15003176624535744,
+        2.9956539076597886,
+        -0.3497161090359279
+      ],
+      "n_scalar": 80
+    }
+  },
+  "margin_factor_optimized_vs_conventional": 2.3409661834352953
+}
