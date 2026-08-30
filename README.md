@@ -26,13 +26,16 @@ Full methodology, additional validation, limitations, and future research direct
 ## Table of Contents
 
 - [The scientific problem](#the-scientific-problem)
-- [Why Tesseract?](#why-tesseract)
-- [Result 1 — Placement makes each measurement more informative](#result-1--optimized-placement-makes-each-measurement-more-informative)
-- [Result 2 — Reverse-mode gradients scale](#result-2--reverse-mode-gradients-scale-with-the-sensor-design-problem)
-- [Result 3 — Optimized sensing improves hidden-AoA recovery](#result-3--optimized-sensing-improves-hidden-aoa-recovery)
+- [Workflow](#workflow)
+  - [Why Tesseract?](#why-tesseract)
+- [Results](#results)
+  - [Result 1 — Placement makes each measurement more informative](#result-1--optimized-placement-makes-each-measurement-more-informative)
+  - [Result 2 — Reverse-mode gradients scale](#result-2--reverse-mode-gradients-scale-with-the-sensor-design-problem)
+  - [Result 3 — Optimized sensing improves hidden-AoA recovery](#result-3--optimized-sensing-improves-hidden-aoa-recovery)
 - [Quick start](#quick-start)
-- [Reproducing results and figures](#reproducing-results-and-figures)
-- [Testing and reproducibility](#testing-and-reproducibility)
+- [Reproducibility](#reproducibility)
+  - [Reproducing results and figures](#reproducing-results-and-figures)
+  - [Testing and CI](#testing-and-ci)
 - [Engineering notes — Tesseract with a minutes-per-call solver](#engineering-notes--tesseract-with-a-minutes-per-call-solver)
 - [Repository layout](#repository-layout)
 - [References](#references)
@@ -59,7 +62,7 @@ The challenge, therefore, is not only to solve the inverse problem or to optimiz
 
 ---
 
-## Why Tesseract?
+## Workflow
 
 <p align="center">
   <img src="components/tesseract_architecture.svg"
@@ -92,6 +95,8 @@ The two sensor-design routes meet at the same interface: the **measurement batch
 
 These are not three separate demonstrations. `T1 → T2` defines the mechanistic observable problem. `T3` is trained to approximate *that same map*, which is what makes large-scale differentiable sensor search affordable. `T1 → T2 → T4` then checks and refines the resulting design against the identical objective on real CFD fields. And `T1 → T2 → inverse optimizer` asks whether the designed measurements improve hidden-AoA recovery. The surrogate route is therefore an approximation of the mechanistic problem rather than an alternative to it, and the mechanistic route closes the loop by evaluating and refining the surrogate-designed layouts.
 
+### Why Tesseract?
+
 This separation matters because the boundary is a real one, not an artificial decomposition. `ImmersaForward` wraps an existing mechanistic Immersa.jl CFD solver written in Julia which costs minutes per evaluation, has no native JAX AD, and computes its AoA sensitivity internally with central finite differences. The observation, surrogate, and design components are Python/JAX, cost milliseconds, and differentiate by AD. The two sides differ in language, in runtime, in cost, and in differentiation strategy.
 
 Tesseract allows these components to participate in the same differentiable workflow without requiring them to share a language, implementation, or differentiation strategy. Each component exposes differentiable inputs, outputs, and derivative endpoints; the application only composes those interfaces. In particular, the AoA derivative is encapsulated inside T1's differentiation boundary. `ImmersaForward` provides `∂(ux, uy)/∂α`, while the application does not need to know how that derivative was obtained. A future tangent-linear or adjoint implementation could therefore replace the current finite-difference derivative without changing the downstream workflow.
@@ -101,7 +106,9 @@ Without Tesseract, the application layer would have to bridge the Julia and Pyth
 
 ---
 
-## Result 1 — Optimized placement makes each measurement more informative
+## Results
+
+### Result 1 — Optimized placement makes each measurement more informative
 
 *Gradients move the probe coordinates; this section asks whether that produces a measurably better sensor layout on real CFD.*
 
@@ -139,9 +146,7 @@ The corresponding optimized layouts show what the optimizer does geometrically: 
 
 > **The surrogate proposes; the mechanistic model checks and refines.**
 
----
-
-## Result 2 — Reverse-mode gradients scale with the sensor-design problem
+### Result 2 — Reverse-mode gradients scale with the sensor-design problem
 
 *The gradient that moved those coordinates is also what makes larger layouts tractable.*
 
@@ -155,9 +160,7 @@ The corresponding optimized layouts show what the optimizer does geometrically: 
 
 A layout of `Ns` probes gives `2Ns` continuous design variables. Coordinate-wise central differences require `2 × 2Ns` objective evaluations, so their cost grows with the number of sensor coordinates, while the reverse-mode chain `T4 VJP → T3 VJP` requires a single reverse-mode gradient evaluation whose measured cost remains nearly constant across the tested range. **Reverse mode offers no advantage for the smallest design problem, but reaches a 7.1× speedup over central differences at 16 continuous design variables (`Ns = 8`) — 0.79 s against 5.58 s.** This benchmark times the fast T3 → T4 design path; it does not differentiate a new mechanistic CFD simulation.
 
----
-
-## Result 3 — Optimized sensing improves hidden-AoA recovery
+### Result 3 — Optimized sensing improves hidden-AoA recovery
 
 *Better discrimination is only worth having if it changes the inverse problem the project set out to solve.*
 
@@ -185,7 +188,7 @@ Additional held-out validation, failure cases, limitations, and future direction
 
 ## Quick start
 
-**Prerequisites:** [Tesseract Core](https://github.com/pasteurlabs/tesseract-core) and a running Docker daemon — each component builds and runs as a container. Linux and macOS; on Windows use [WSL2](https://learn.microsoft.com/windows/wsl/).
+**Prerequisites:** [Tesseract Core](https://github.com/pasteurlabs/tesseract-core) and a running Docker daemon, as each component builds and runs as a container. Linux and macOS; on Windows use [WSL2](https://learn.microsoft.com/windows/wsl/).
 
 ```bash
 git clone https://github.com/arturofburgos/immersa-tesseract-inference.git
@@ -211,7 +214,7 @@ python scripts/budget_ablation/plot_readme_figures.py                    # R1, R
 python scripts/budget_ablation/plot_readme_ns8_recovery_and_landscape.py # R6
 ```
 
-Both scripts only read committed CSV/JSON. They do **not** rerun the optimization campaigns, do **not** touch the CFD bank, and do **not** start any container — this is the quickest way to confirm that the numbers in the results sections come from the stored artifacts. The hero GIF is the one exception: it has extra dependencies, listed under [Reproducing results and figures](#reproducing-results-and-figures).
+Both scripts only read committed CSV/JSON. They do **not** rerun the optimization campaigns, do **not** touch the CFD bank, and do **not** start any container. This is the quickest way to confirm that the numbers in the results sections come from the stored artifacts. Figure 1 is the one exception: it has extra dependencies, listed under [Reproducing results and figures](#reproducing-results-and-figures).
 
 ### Quick verification — minutes after build, no production CFD
 
@@ -250,11 +253,13 @@ Production settings used throughout this work: `h = 0.05`, `dt = 0.0025`, `tf = 
 
 **Why 79 solves but a 66-angle evaluation grid?** `build_cfd_bank.py` solves the union of two AoA grids: the 1° landscape grid over 20…85° (**66 angles**) and the coarser 2.5° Phase-I design grid (27 angles), which together give the **79** distinct solutions in the persisted bank — the 13 extra being the half-degree stations 22.5°, 27.5°, …, 82.5°. The refined discrimination evaluations always use the 66-angle 1° grid, referred to throughout as the *66-AoA evaluation grid*; the 13 extra cases are what allow the Phase-I 2.5° grid to be reproduced from the same bank.
 
-**Judges do not need to rerun any of these campaigns.** Every quoted metric is committed as JSON/CSV under [results/](results/), and every README figure except the hero regenerates from those tracked artifacts alone.
+**Judges do not need to rerun any of these campaigns.** Every quoted metric is committed as JSON/CSV under [results/](results/), and every README figure except Figure 1 regenerates from those tracked artifacts alone.
 
 ---
 
-## Reproducing results and figures
+## Reproducibility
+
+### Reproducing results and figures
 
 The campaigns below reproduce the reported metrics and write frozen artifacts under [results/](results/). `T1` means new CFD solves; `bank` means the persisted 79-case CFD bank is sampled but no new CFD is run. Reported discrimination metrics are computed on the 66-angle 1° evaluation grid within that bank.
 
@@ -276,13 +281,11 @@ The four README figures below regenerate from tracked artifacts alone — no con
 | **R1**, **R2**, **R3** | `python scripts/budget_ablation/plot_readme_figures.py` |
 | **R6** matched `Ns=8` recovery + landscape | `python scripts/budget_ablation/plot_readme_ns8_recovery_and_landscape.py` |
 
-The hero is the exception. `python scripts/budget_ablation/plot_hero_multistart_story.py` additionally needs the presentation-only wake field `data/hero_visualization_alpha063_h002.npz` (**gitignored**; rebuild with `build_hero_visualization_field.py`), the two `Ns=5` optimizer-iterate replays `ns5_{optimization,naive_start}_replay.json`, and the cached objective histories `ns5_objective_histories.json` — if that cache is absent, it is recomputed using the built Tesseract containers. Both replays reproduce the frozen campaign exactly; the winner lands on `Ns5_optimized` bit-for-bit.
+Figure 1 is the exception. `python scripts/budget_ablation/plot_hero_multistart_story.py` additionally needs the presentation-only wake field `data/hero_visualization_alpha063_h002.npz` (**gitignored**; rebuild with `build_hero_visualization_field.py`), the two `Ns=5` optimizer-iterate replays `ns5_{optimization,naive_start}_replay.json`, and the cached objective histories `ns5_objective_histories.json` — if that cache is absent, it is recomputed using the built Tesseract containers. Both replays reproduce the frozen campaign exactly; the winner lands on `Ns5_optimized` bit-for-bit.
 
 Supporting figures for the technical write-up come from `plot_readme_alias.py` (**R4**, the two-probe alias landscape), `plot_readme_heldout.py` (**R5**, held-out summary), and the other `plot_*.py` scripts in the same campaign directories. Plotting scripts read frozen artifacts and hard-code no scientific values.
 
----
-
-## Testing and reproducibility
+### Testing and CI
 
 `make test` runs **9 Tesseract regression fixtures** — JSON with per-output `atol`/`rtol`, via `tesseract run <image> test` — plus **14 pytest tests** in `app/`, all exercising the real containers. CI ([`.github/workflows/test.yaml`](.github/workflows/test.yaml)) builds all four components and runs the same target on Python 3.10 and 3.14; a second workflow runs `pre-commit` (ruff lint + format, file hygiene). Capture a new fixture with `make gen-tests <component> FILE=payload.json`.
 
