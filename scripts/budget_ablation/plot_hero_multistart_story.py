@@ -511,6 +511,59 @@ def draw_objective(
     )
 
 
+def link_region_to_panels(
+    fig: plt.Figure, ax_context: plt.Axes, axes_b: list[plt.Axes]
+) -> None:
+    """Tie the design-region box in (A) to the panels that magnify it.
+
+    The B panels all show the same crop, so instead of three connectors they
+    repeat the box's dashed frame and a single labelled arrow points down out
+    of the box. A fan of straight connectors does not work in this layout: the
+    box sits left of centre while the B row spans the full width, so the outer
+    lines would run almost horizontally across panel (C) and both titles.
+    """
+    for ax in axes_b:
+        for spine in ax.spines.values():
+            spine.set_visible(True)
+            spine.set_edgecolor(WINNER_COLOR)
+            spine.set_linewidth(1.6)
+            spine.set_linestyle((0, (5, 3)))
+            spine.set_alpha(0.75)
+
+    midpoint = 0.5 * (X_BOUNDS[0] + X_BOUNDS[1])
+
+    ax_context.annotate(
+        "",
+        xy=(midpoint, Y_BOUNDS[0] - 0.30),
+        xytext=(midpoint, Y_BOUNDS[0]),
+        xycoords="data",
+        textcoords="data",
+        annotation_clip=False,
+        arrowprops={
+            "arrowstyle": "-|>",
+            "color": WINNER_COLOR,
+            "linewidth": 1.6,
+            "linestyle": (0, (4, 2.5)),
+            "shrinkA": 0,
+            "shrinkB": 0,
+            "mutation_scale": 15,
+        },
+        zorder=8,
+    )
+    ax_context.text(
+        midpoint + 0.12,
+        Y_BOUNDS[0] - 0.20,
+        "(B1) to (B3) below show this region",
+        fontsize=10.2,
+        fontweight="bold",
+        color=WINNER_COLOR,
+        va="center",
+        ha="left",
+        clip_on=False,
+        zorder=8,
+    )
+
+
 def render(
     fig: plt.Figure,
     field: dict,
@@ -587,6 +640,8 @@ def render(
         story["cfd"]["winner"] / story["cfd"]["baseline"] - 1.0,
         WINNER_COLOR,
     )
+
+    link_region_to_panels(fig, ax_context, axes_b)
 
     fig.suptitle(
         "From a conventional rake to more informative sensing",

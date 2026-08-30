@@ -111,23 +111,6 @@ def budget_two_panel(summary: dict, rows: dict) -> list[Path]:
         ax.grid(alpha=0.25, linewidth=0.7)
         ax.legend(frameon=False, fontsize=11)
 
-    axes[0].annotate(
-        "optimized peaks near $N_s\\approx3$,\nthen saturates",
-        xy=(3, per_opt[counts.index(3)]),
-        xytext=(4.1, 0.105),
-        fontsize=10.5,
-        color=OPTIMIZED_COLOR,
-        arrowprops={"arrowstyle": "->", "color": OPTIMIZED_COLOR, "lw": 1.3},
-    )
-    axes[0].annotate(
-        "additional aligned probes\nbecome increasingly redundant",
-        xy=(8, per_naive[-1]),
-        xytext=(3.4, 0.066),
-        fontsize=10.5,
-        color=NAIVE_COLOR,
-        arrowprops={"arrowstyle": "->", "color": NAIVE_COLOR, "lw": 1.3},
-    )
-
     fig.suptitle(
         "Placement beats count per measurement; count still adds total discrimination",
         fontsize=14,
@@ -266,17 +249,6 @@ def gradient_scaling_readme() -> list[Path]:
             color=NAIVE_COLOR,
             fontweight="bold",
         )
-
-    # The smallest design is the honest counterexample; call it out explicitly.
-    ax.annotate(
-        f"reverse mode is {speedup[0]:.1f}$\\times$ here:\nnot worth it at 2 variables",
-        xy=(dims[0], reverse[0]),
-        xytext=(5.6, 0.22),
-        fontsize=10.5,
-        color="#555555",
-        ha="left",
-        arrowprops={"arrowstyle": "->", "color": "#777777", "lw": 1.2},
-    )
 
     ax.set_xlabel("number of continuous sensor-design variables  $2N_s$", fontsize=12.5)
     ax.set_ylabel("gradient evaluation time  [s]", fontsize=12.5)
