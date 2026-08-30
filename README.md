@@ -2,7 +2,7 @@
 
 > **Don't just add sensors. Put them where the physics is more informative.**
 
-I present here a differentiable workflow composed of four Tesseracts [1]. It first infers the angle of attack (AoA) of a "hidden" flat plate from a small set of sparse wake probes, and then uses end-to-end gradients to decide *where those probes should be placed* so as to maximize the ability to identify the AoA. The workflow combines immersed-boundary CFD in Julia with a differentiable JAX chain for measurement, surrogate and experimental design.
+This project composes four Tesseracts [1] to infer the angle of attack (AoA) of a "hidden" flat plate from a small set of sparse wake probes, and then uses end-to-end gradients to decide *where those probes should be placed* so as to optimize the ability to identify the AoA. The workflow combines immersed-boundary CFD in Julia with a differentiable JAX chain for measurement, surrogate and experimental design.
 
 <p align="center">
   <img src="results/sensor_budget_ablation/figures/hero_multistart_story.gif"
@@ -10,7 +10,7 @@ I present here a differentiable workflow composed of four Tesseracts [1]. It fir
        width="900">
 </p>
 
-<p align="center"><em><strong>Figure 1.</strong> Local optimization improves the conventional rake, while differentiable design with multiple initializations finds a stronger configuration distributed between the near- and far-wake regions.<br>Probe trajectories come from the frozen T3→T4 campaign at <code>h = 0.05</code>; the α = 63° wake is rendered at <code>h = 0.02</code> for visualization only. Panel A animates the wake over the full simulation, while the optimizer panels advance through optimization iterations on an independent normalized timeline; the two are not synchronized.</em></p>
+<p align="center"><em><strong>Figure 1.</strong> Probe trajectories come from the frozen T3→T4 campaign at <code>h = 0.05</code>; the α = 63° wake is rendered at <code>h = 0.02</code> for visualization only. Panel A animates the wake over the full simulation, while the optimizer panels advance through optimization iterations on an independent normalized timeline; the two are not synchronized.</em></p>
 
 ---
 
@@ -33,6 +33,7 @@ Full methodology, additional validation, held-out experiments, failure cases, li
 - [Quick start](#quick-start)
 - [Reproducing results and figures](#reproducing-results-and-figures)
 - [Testing and reproducibility](#testing-and-reproducibility)
+- [Engineering notes — Tesseract with a minutes-per-call solver](#engineering-notes--tesseract-with-a-minutes-per-call-solver)
 - [Repository layout](#repository-layout)
 - [References](#references)
 - [Track and license](#track-and-license)
@@ -297,6 +298,18 @@ The versions below are pinned because the `.eqx` weights are deserialized agains
 JAX x64 is deliberately not enabled: T2, T3 and T4 run in float32, which caps composed-gradient agreement at roughly `1e-5` relative and is accounted for in every tolerance above.
 
 **Benchmark environment (Result 2).** The 0.79 s / 5.58 s gradient timings were measured through the pinned T3/T4 containers above, which install the CPU-only `jax[cpu]==0.10.2` build — no GPU is used. The host CPU and OS were not recorded alongside the frozen `gradient_scaling.csv`. Absolute timings are therefore machine-dependent; the reported 7.1× comparison was measured on the same machine for both methods, in a single run.
+
+## Engineering notes — Tesseract with a minutes-per-call solver
+
+`tesseract-core` is used unmodified at the pinned 1.11.0 release; nothing here is a fork. Composing a Julia CFD solver with JAX components did expose boundary-level constraints, and working around them shaped the design of this project.
+
+**Reusing expensive component outputs.** A single `T1.apply` at production settings takes about 53 s. Scoring one candidate sensor layout over the 66-AoA evaluation grid would therefore cost roughly 58 minutes of live CFD, and the design optimizer needs 142 such evaluations — on the order of 5.7 days of serial CFD for a single optimization run. Because the probes are passive, sensor position is not an input to T1 and the flow state does not depend on it. T1 is therefore solved once per angle of attack and the fields are persisted; any candidate layout is scored by replaying those fields through `T2.apply`, taking the sensor-position gradient through `T4 VJP → T2 VJP` alone. The mechanistic design loop then runs with no new CFD at all. Tesseract's experimental VJP cache does not cover this case — it is local to JAX recipes, and T1 imports no JAX — so this was reported upstream as [tesseract-core#711](https://github.com/pasteurlabs/tesseract-core/issues/711).
+
+**Derivative endpoints discard reusable work.** `T1.jacobian` forms its central difference internally, so the two full CFD solutions it computes are discarded at the container boundary. The application-level route that calls `apply` twice produces the same derivative to `3.55e-07` relative while keeping both fields: the more Tesseract-native composition is the one that throws away more reusable work. Both routes are implemented and selected per study, which is what made the comparison measurable in the first place.
+
+**float32 regression fixtures are not bit-portable.** The T3 fixtures failed CI on a different machine. The cause was traced to instruction-set-dependent XLA float32 results rather than dependency drift, and the fixtures now carry `atol = rtol = 1e-5`; the framework default `atol = 1e-8` is a float64-scale tolerance applied regardless of output dtype.
+
+**T1 exposes no `abstract_eval`.** Immersa's output grid is solver-determined — `h = 0.05` yields `(141, 60)` and `h = 0.02` yields `(353, 152)`, which no simple function of `h` predicts — so T1 provides the explicit Jacobian/JVP interface rather than claiming to be statically traceable.
 
 ## Repository layout
 

@@ -528,7 +528,7 @@ def render(
         height_ratios=[1.12, 1.0],
         left=0.03,
         right=0.988,
-        top=0.868,
+        top=0.885,
         bottom=0.175,
         wspace=0.13,
         hspace=0.34,
@@ -592,17 +592,8 @@ def render(
         "From a conventional rake to more informative sensing",
         fontsize=21,
         fontweight="bold",
-        y=0.978,
+        y=0.975,
         color=TEXT_COLOR,
-    )
-    fig.text(
-        0.5,
-        0.928,
-        "Local optimization helps; multistart differentiable design finds the "
-        "strongest layout",
-        ha="center",
-        fontsize=12.5,
-        color=MUTED,
     )
     # The still shows one instant; the animation sweeps the whole run on an
     # index that is independent of the optimizer iteration.
