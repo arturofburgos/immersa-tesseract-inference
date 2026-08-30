@@ -2,7 +2,7 @@
 
 > **Don't just add sensors. Put them where the physics is more informative.**
 
-I present here a differentiable workflow composed of four Tesseracts. It first infers the angle of attack (AoA) of a "hidden" flat plate from a small set of sparse wake probes, and then uses end-to-end gradients to decide *where those probes should be placed* so as to maximize the ability to identify the AoA. The workflow combines immersed-boundary CFD in Julia with a differentiable JAX chain for measurement, surrogate and experimental design.
+I present here a differentiable workflow composed of four Tesseracts [1]. It first infers the angle of attack (AoA) of a "hidden" flat plate from a small set of sparse wake probes, and then uses end-to-end gradients to decide *where those probes should be placed* so as to maximize the ability to identify the AoA. The workflow combines immersed-boundary CFD in Julia with a differentiable JAX chain for measurement, surrogate and experimental design.
 
 <p align="center">
   <img src="results/sensor_budget_ablation/figures/hero_multistart_story.gif"
@@ -19,7 +19,7 @@ I present here a differentiable workflow composed of four Tesseracts. It first i
 - **Hidden-parameter inference from sparse wake data.** A flat plate's unknown angle of attack is recovered from a handful of point probes in its wake, through a composed Julia-CFD-to-JAX chain rather than a single monolithic solver.
 - **Probe placement as a differentiable design variable.** Sensor coordinates are continuous and the whole measurement chain is differentiable with respect to them, so end-to-end gradients optimize *where to measure*, not just what to infer.
 - **Heterogeneous differentiable composition across a real boundary.** A Julia immersed-boundary solver that differentiates by finite differences and a Python/JAX stack that uses automatic differentiation take part in one gradient chain, without sharing a language, cost scale, or differentiation strategy.
-- **Cheap surrogate search, mechanistic verification.** A coordinate-based surrogate makes the design search affordable, while the mechanistic CFD route independently checks and refines every layout it proposes.
+- **Cheap surrogate search, mechanistic verification.** A coordinate-based surrogate makes the design search affordable, while the mechanistic CFD route evaluates the proposed layouts on real CFD fields and further refines the selected design.
 
 Full methodology, additional validation, held-out experiments, failure cases, limitations, and future research directions are covered in the accompanying technical write-up.
 
@@ -34,16 +34,19 @@ Full methodology, additional validation, held-out experiments, failure cases, li
 - [Reproducing results and figures](#reproducing-results-and-figures)
 - [Testing and reproducibility](#testing-and-reproducibility)
 - [Repository layout](#repository-layout)
+- [References](#references)
 - [Track and license](#track-and-license)
 
 ---
 
 ## The scientific problem
 
-A thin flat plate sits at a fixed, unknown angle of attack `α` in a flow at Reynolds number Re = 200, simulated to a final time of 20 s. Depending on the AoA, the plate sheds a vortex wake, as seen in panel (A) of Figure 1. Downstream, point probes record the velocities `ux, uy` at five instants `t ∈ [12.0, 13.3, 15.1, 17.4, 20.0]`. The flow is simulated with [Immersa.jl](https://github.com/NUFgroup/Immersa.jl), a Julia CFD solver based on the Immersed Boundary Method [1] for fluid–structure interaction problems. The motivation can be summarized by two questions:
+A thin flat plate sits at a fixed, unknown angle of attack `α` in a flow at Reynolds number Re = 200, simulated to a final time of 20 s. Depending on the AoA, the plate sheds a vortex wake, as seen in panel (A) of Figure 1. Downstream, point probes record the velocities `ux, uy` at five instants `t ∈ [12.0, 13.3, 15.1, 17.4, 20.0]`. The flow is simulated with [Immersa.jl](https://github.com/NUFgroup/Immersa.jl), a Julia CFD solver based on the Immersed Boundary Method [2] for fluid–structure interaction problems.
+
+Related work has shown that sparse measurements in separated flat-plate flows can be used to estimate the underlying flow state through learned nonlinear maps [3]. Here, rather than reconstructing the flow field, two questions serve as motivation:
 
 1. **Can sparse wake measurements recover a hidden AoA?**
-2. **And more importantly, can we position the probes to better distinguish between different AoAs?**
+2. **And more importantly, can the probe locations be optimized directly with gradients to better distinguish different AoAs?**
 
 The difficulty lies in aliasing: different plate angles can produce nearly indistinguishable wakes at a badly chosen probe location. The inverse objective then develops spurious local minima, and a solver started on the wrong side can converge confidently to the wrong angle. Here, the worst alias occurs for the pair [**63°**, **83°**].
 
@@ -63,6 +66,8 @@ The challenge, therefore, is not only to solve the inverse problem or to optimiz
        width="900">
 </p>
 
+<p align="center"><em><strong>Figure 2.</strong> The four Tesseracts and the language and differentiation boundary they span: T1 in Julia with finite-difference sensitivity, T2–T4 in Python/JAX with automatic differentiation. The three numbered routes are physical inference, high-fidelity design, and cheap surrogate design.</em></p>
+
 The workflow crosses a real boundary and is composed of four Tesseracts, each responsible for a distinct stage of the inference and design chain. `ImmersaForward` (T1) solves the flow physics; `WakeObservation` (T2) turns the dense fields into sparse measurements at the probe positions; `WakeSurrogate` (T3) is a coordinate-based differentiable surrogate of the velocity observable map over the sensor-design region; and `SensorArrayDesign` (T4) quantifies how well a given sensor configuration distinguishes different AoAs.
 
 |        | Component                                                            | Role        | Maps                                            | Stack              | Differentiation                                  |
@@ -77,23 +82,27 @@ This problem does not correspond to a single homogeneous chain `T1 → T2 → T3
 **Physical inverse-inference route — `T1 → T2 → inverse optimizer`.** `ImmersaForward` receives a candidate AoA and computes the dense CFD field. `WakeObservation` samples that field at the probe locations, and the resulting measurements are compared with the observed data by the inverse optimizer, which updates the AoA.
 
 
-**High-fidelity sensor-design route — `T1 → T2 → T4`.** This route reuses the same mechanistic `T1 → T2` measurement path, but instead of sending the probe measurements to the inverse optimizer, it sends a measurement batch spanning candidate AoAs to `SensorArrayDesign`. T4 then evaluates how well the current sensor layout distinguishes those AoAs.
-
-Crucially, this route does **not** rerun the CFD solver every time a probe moves. Probes are passive: moving one does not change the flow. Persisted `T1` fields can therefore be sampled by `T2` at any new sensor positions, the whole dependence of the design score on the sensor coordinates arises inside `T2`, and the gradient flows back through `T2 → T4` alone. No derivative of `T1` with respect to sensor position is ever required.
+**High-fidelity sensor-design route — `T1 → T2 → T4`.** This route reuses the same mechanistic `T1 → T2` measurement path, but instead of sending the probe measurements to the inverse optimizer, it sends a measurement batch spanning candidate AoAs to `SensorArrayDesign`. T4 then evaluates how well the current sensor layout distinguishes those AoAs. Crucially, this route does **not** rerun the CFD solver every time a probe moves. Probes are passive: moving one does not change the flow. Persisted `T1` fields can therefore be sampled by `T2` at any new sensor positions, the whole dependence of the design score on the sensor coordinates arises inside `T2`, and the gradient flows back through `T2 → T4` alone. No derivative of `T1` with respect to sensor position is ever required.
 
 
 **Cheap design route — `T3 → T4`.** `WakeSurrogate` was trained to approximate the observable map represented by `T1 → T2`: given `(α, x, y)`, it predicts `ux, uy` at the five observation times, anywhere in the trained sensor-design region. During optimization it is queried only at the current candidate sensor coordinates, so it bypasses both the expensive CFD solve and the sampling operation in `T2`. Its measurement batch is passed to the same `SensorArrayDesign`. Conceptually `T3 ≈ T2 ∘ T1`, but only for the observable map needed for experiment design, never for the full CFD state.
 
 The two sensor-design routes meet at the same interface: the **measurement batch**. The mechanistic route `T1 → T2` and the surrogate route `T3` produce the same type of observable, allowing `T4` to score either one without knowing how those measurements were obtained.
 
-This separation matters because the components are deeply heterogeneous. The physical solver is implemented in Julia, costs minutes per evaluation, and computes its AoA sensitivity internally using central finite differences. The observation, surrogate, and design components, by contrast, are implemented in Python/JAX, cost milliseconds, and use automatic differentiation.
+These are not three separate demonstrations. `T1 → T2` defines the mechanistic observable problem; `T3` is trained to approximate *that same map*, which is what makes large-scale differentiable sensor search affordable; `T1 → T2 → T4` then checks and refines the resulting design against the identical objective on real CFD fields; and `T1 → T2 → inverse optimizer` finally asks whether the designed measurements improve hidden-AoA recovery. The surrogate route is therefore an approximation *of* the mechanistic problem rather than an alternative to it, and the mechanistic route closes the loop by evaluating — and, where used, refining — the surrogate-designed layouts.
+
+This separation matters because the boundary is a real one, not an artificial decomposition. `ImmersaForward` wraps an existing mechanistic Immersa.jl CFD solver written in Julia: it costs minutes per evaluation, has no native JAX AD, and computes its AoA sensitivity internally with central finite differences. The observation, surrogate, and design components are Python/JAX, cost milliseconds, and differentiate by AD. The two sides differ in language, in runtime, in cost by orders of magnitude, and in differentiation strategy.
 
 Tesseract allows these components to participate in the same differentiable workflow without requiring them to share a language, implementation, or differentiation strategy. Each component exposes differentiable inputs, outputs, and derivative endpoints; the application only composes those interfaces. In particular, **the AoA derivative is encapsulated inside T1's differentiation boundary**: `ImmersaForward` provides `∂(ux, uy)/∂α`, while the application does not need to know how that derivative was obtained. A future tangent-linear or adjoint implementation could therefore replace the current finite-difference derivative without changing the downstream workflow.
+
+Without Tesseract, the application layer would have to bridge the Julia and Python execution boundary itself and hand-roll derivative plumbing for both the mechanistic and the surrogate paths. Here those concerns stay local to each component, and the application only composes their declared differentiable interfaces — which is what makes swapping the surrogate route for the mechanistic one a change of wiring rather than a rewrite.
 
 
 ---
 
 ## Result 1 — Optimized placement makes each measurement more informative
+
+*Gradients move the probe coordinates; this section asks whether that produces a measurably better sensor layout on real CFD.*
 
 **How a layout is scored.** For a fixed sensor layout, every candidate angle of attack produces its own vector of probe measurements. The *worst-case discrimination* is the distance between the hardest-to-distinguish pair of sufficiently separated angles, so a larger value means that even the most similar candidate wakes are easier to tell apart. Dividing by the number of measured scalar values gives the **per-scalar-measurement** version, which lets layouts with different sensor budgets be compared fairly. **Real-CFD** means those measurements are sampled from Immersa.jl fields rather than generated by T3: the surrogate is used to search for layouts, never to score them here.
 
@@ -105,6 +114,8 @@ Tesseract allows these components to participate in the same differentiable work
        width="820">
 </p>
 
+<p align="center"><em><strong>Figure 3 (R1).</strong> Real-CFD worst-case discrimination per scalar measurement (left) and in total (right), for conventional and optimized layouts at every tested sensor budget.</em></p>
+
 For each sensor budget `Ns = 1, 2, 3, 5, 8`, the differentiable T3 → T4 objective is optimized from 10 initial layouts — the conventional rake plus nine random starts — and the best final layout is frozen before any mechanistic evaluation. The multistart search reduces sensitivity to local optima in a nonconvex design space, where local optimization started from the conventional rake can remain in an inferior configuration concentrated in the near wake. The frozen layout and the conventional baseline are then scored on the same 66-AoA evaluation grid drawn from the 79-case CFD bank; no new CFD was run for this comparison.
 
 **Optimized placement improves real-CFD worst-case discrimination per scalar measurement by 35–122 % across every tested budget**, and the advantage widens with budget as additional aligned measurements become increasingly redundant. Compactly: *one optimized probe provides about 70 % greater worst-case discrimination per measurement than eight naive probes* — but in **total** discrimination eight naive probes (4.5282) remain well ahead of a single optimized probe (0.9596). Placement drives discrimination efficiency per measurement, while additional well-placed probes still increase total information.
@@ -115,9 +126,11 @@ For each sensor budget `Ns = 1, 2, 3, 5, 8`, the differentiable T3 → T4 object
        width="820">
 </p>
 
+<p align="center"><em><strong>Figure 4 (R2).</strong> Optimized layouts for each budget. As the budget grows, probes occupy both a near-wake and a far-wake region rather than densifying one cross-stream rake.</em></p>
+
 The corresponding optimized layouts show what the optimizer does geometrically: they do not simply densify one cross-stream rake. With larger budgets, sensors consistently occupy both a near-wake region (`x ≈ 1.0–1.5`) and a far-wake region (`x ≈ 2.6–3.0`). This pattern is consistent with distinct wake regions carrying complementary information — an interpretation, not a demonstrated physical mechanism.
 
-**From surrogate proposal to mechanistic check.** A surrogate-optimized layout is a *proposal*; the question is whether it survives contact with the mechanistic model. **Phase I** designed against an AoA grid with 2.5° spacing and improved global real-CFD discrimination by +14.2 %, but barely changed the alias that actually breaks the inverse problem: the confusion between 63° and 83° is sharper than any pair the coarse grid represents adequately, so the criterion could not see it.
+**From surrogate proposal to mechanistic check.** Everything above was searched with surrogate gradients, so it has to survive the mechanistic model. A surrogate-optimized layout is a *proposal*; the question is whether it survives contact with the mechanistic model. **Phase I** designed against an AoA grid with 2.5° spacing and improved global real-CFD discrimination by +14.2 %, but barely changed the alias that actually breaks the inverse problem: the confusion between 63° and 83° is sharper than any pair the coarse grid represents adequately, so the criterion could not see it.
 
 **Phase II** refined only the AoA design grid, to 1° spacing over 20…85°. The CFD mesh, the T3 weights, the T4 mathematics, the bounds, the optimizer and the minimum sensor separation were left unchanged — no retraining, and no new CFD for the design step. Evaluated afterwards on the 66-AoA evaluation grid, the resulting two-probe design (`s*_surrogate_v2`) improves global discrimination `D_τ` by **+40.4 %**, the physical hard minimum by **+70.1 %**, and the critical (63°, 83°) pair distance by **+84.8 %** over the conventional array.
 
@@ -129,11 +142,15 @@ The corresponding optimized layouts show what the optimizer does geometrically: 
 
 ## Result 2 — Reverse-mode gradients scale with the sensor-design problem
 
+*The gradient that moved those coordinates is also what makes larger layouts tractable.*
+
 <p align="center">
   <img src="results/sensor_budget_ablation/figures/R3_gradient_scaling_readme.png"
        alt="Gradient evaluation time against the number of continuous sensor-design variables for reverse mode and central finite differences"
        width="620">
 </p>
+
+<p align="center"><em><strong>Figure 5 (R3).</strong> Gradient evaluation time against the number of continuous sensor-design variables. Coordinate-wise central differences scale with the design dimension; the reverse-mode cost stays nearly constant across the tested range.</em></p>
 
 A layout of `Ns` probes gives `2Ns` continuous design variables. Coordinate-wise central differences require `2 × 2Ns` objective evaluations, so their cost grows with the number of sensor coordinates, while the reverse-mode chain `T4 VJP → T3 VJP` requires a single reverse-mode gradient evaluation whose measured cost remains nearly constant across the tested range. **Reverse mode offers no advantage for the smallest design problem, but reaches a 7.1× speedup over central differences at 16 continuous design variables (`Ns = 8`) — 0.79 s against 5.58 s.** This benchmark times the fast T3 → T4 design path; it does not differentiate a new mechanistic CFD simulation.
 
@@ -141,15 +158,19 @@ A layout of `Ns` probes gives `2Ns` continuous design variables. Coordinate-wise
 
 ## Result 3 — Optimized sensing improves hidden-AoA recovery
 
+*Better discrimination is only worth having if it changes the inverse problem the project set out to solve.*
+
 Discrimination is a proxy; the ultimate goal is to recover the hidden angle. The cross-language `T1 → T2` inverse workflow recovers a hidden truth of 63° from an initial guess of 55° as **63.000018° in 5 iterations**, demonstrating the physical AoA-inference route end to end across the Julia/JAX boundary.
 
 The harder question is whether optimized sensor placement makes that recovery more robust across different initial guesses.
 
 <p align="center">
-  <img src="results/sensor_budget_ablation/figures/R7_ns8_recovery_and_landscape_readme.png"
+  <img src="results/sensor_budget_ablation/figures/R6_ns8_recovery_and_landscape_readme.png"
        alt="Matched eight-probe comparison of multistart AoA recovery and the corresponding real-CFD inverse landscape for conventional and optimized sensor layouts"
        width="900">
 </p>
+
+<p align="center"><em><strong>Figure 6 (R6).</strong> Matched eight-probe comparison: multistart AoA recovery from ten initial guesses (left) and the corresponding real-CFD inverse landscape (right), for the conventional rake and the optimized array.</em></p>
 
 At the same eight-probe budget (left), the conventional rake recovers the correct AoA from **7/10** initial guesses, while the optimized array succeeds from **8/10**. The improvement is modest — one additional successful trajectory — but it occurs without adding sensors. In particular, `α₀ = 40°` converges to a false solution near 50.707° with the conventional rake, while the optimized array recovers **63.000108°**.
 
@@ -180,6 +201,17 @@ make build                               # builds all four Tesseracts
 
 Verification comes at three levels, cheapest first: **fastest result check** replots the reported figures from committed artifacts (seconds, no containers); **quick verification** exercises the real containers and composed gradients (minutes, once `make build` has finished); **full reproduction** rebuilds the CFD data and reruns the campaigns (hours).
 
+### Fastest result check — seconds, no CFD, no containers
+
+Every reported metric is committed as JSON/CSV under [results/](results/), and the four static README figures are rebuilt from those frozen artifacts alone:
+
+```bash
+python scripts/budget_ablation/plot_readme_figures.py                    # R1, R2, R3
+python scripts/budget_ablation/plot_readme_ns8_recovery_and_landscape.py # R6
+```
+
+Both scripts only read committed CSV/JSON. They do **not** rerun the optimization campaigns, do **not** touch the CFD bank, and do **not** start any container — this is the quickest way to confirm that the numbers in the results sections come from the stored artifacts. The hero GIF is the one exception: it has extra dependencies, listed under [Reproducing results and figures](#reproducing-results-and-figures).
+
 ### Quick verification — minutes after build, no production CFD
 
 ```bash
@@ -203,17 +235,6 @@ make test-immersa
 ```
 
 The first two print the analytic-versus-finite-difference comparison coordinate by coordinate.
-
-### Fastest result check — seconds, no CFD, no containers
-
-Every reported metric is committed as JSON/CSV under [results/](results/), and the three static README figures are rebuilt from those frozen artifacts alone:
-
-```bash
-python scripts/budget_ablation/plot_readme_figures.py                    # R1, R2, R3
-python scripts/budget_ablation/plot_readme_ns8_recovery_and_landscape.py # R7
-```
-
-Both scripts only read committed CSV/JSON. They do **not** rerun the optimization campaigns, do **not** touch the CFD bank, and do **not** start any container — this is the quickest way to confirm that the numbers in the results sections come from the stored artifacts. The hero GIF is the one exception: it has extra dependencies, listed under [Reproducing results and figures](#reproducing-results-and-figures).
 
 ### Full reproduction — hours, and requires CFD
 
@@ -252,7 +273,7 @@ The four README figures below regenerate from tracked artifacts alone — no con
 | Figure | Command |
 | :-- | :-- |
 | **R1**, **R2**, **R3** | `python scripts/budget_ablation/plot_readme_figures.py` |
-| **R7** matched `Ns=8` recovery + landscape | `python scripts/budget_ablation/plot_readme_ns8_recovery_and_landscape.py` |
+| **R6** matched `Ns=8` recovery + landscape | `python scripts/budget_ablation/plot_readme_ns8_recovery_and_landscape.py` |
 
 The hero is the exception. `python scripts/budget_ablation/plot_hero_multistart_story.py` additionally needs the presentation-only wake field `data/hero_visualization_alpha063_h002.npz` (**gitignored**; rebuild with `build_hero_visualization_field.py`), the two `Ns=5` optimizer-iterate replays `ns5_{optimization,naive_start}_replay.json`, and the cached objective histories `ns5_objective_histories.json` — if that cache is absent, it is recomputed using the built Tesseract containers. Both replays reproduce the frozen campaign exactly; the winner lands on `Ns5_optimized` bit-for-bit.
 
@@ -275,7 +296,7 @@ The versions below are pinned because the `.eqx` weights are deserialized agains
 
 JAX x64 is deliberately not enabled: T2, T3 and T4 run in float32, which caps composed-gradient agreement at roughly `1e-5` relative and is accounted for in every tolerance above.
 
-**Benchmark environment (Result 2).** The 0.79 s / 5.58 s gradient timings were measured through the pinned T3/T4 containers above, which install the CPU-only `jax[cpu]==0.10.2` build — no GPU is used. The host CPU and OS were not recorded alongside the frozen `gradient_scaling.csv`, so absolute times are machine-dependent; the 7.1× ratio is measured on one machine in a single run. <!-- TODO: fill in host CPU / OS here. -->
+**Benchmark environment (Result 2).** The 0.79 s / 5.58 s gradient timings were measured through the pinned T3/T4 containers above, which install the CPU-only `jax[cpu]==0.10.2` build — no GPU is used. The host CPU and OS were not recorded alongside the frozen `gradient_scaling.csv`. Absolute timings are therefore machine-dependent; the reported 7.1× comparison was measured on the same machine for both methods, in a single run.
 
 ## Repository layout
 
@@ -298,6 +319,16 @@ immersa-tesseract-inference/
 ├── Makefile                          # build, test, and component utilities
 └── README.md
 ```
+
+---
+
+## References
+
+[1] Häfner, D., & Lavin, A. (2025). *Tesseract Core: Universal, autodiff-native software components for Simulation Intelligence.* Journal of Open Source Software, 10(111), 8385.
+
+[2] Colonius, T., & Taira, K. (2008). *A fast immersed boundary method using a nullspace approach and multi-domain far-field boundary conditions.* Computer Methods in Applied Mechanics and Engineering, 197(25–28), 2131–2146.
+
+[3] Nair, N. J., & Goza, A. (2020). *Leveraging reduced-order models for state estimation using deep learning.* Journal of Fluid Mechanics, 897, R1.
 
 ---
 

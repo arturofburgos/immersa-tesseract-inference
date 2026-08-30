@@ -237,7 +237,7 @@ def main() -> None:
     )
 
     for suffix, kwargs in ((".png", {"dpi": 170}), (".pdf", {})):
-        path = FIGURE_DIR / f"R7_ns8_recovery_and_landscape_readme{suffix}"
+        path = FIGURE_DIR / f"R6_ns8_recovery_and_landscape_readme{suffix}"
         fig.savefig(path, bbox_inches="tight", facecolor="white", **kwargs)
         print(f"Wrote {path}")
 
