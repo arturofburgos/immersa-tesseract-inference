@@ -196,8 +196,7 @@ def layouts_readme(summary: dict) -> list[Path]:
     )
 
     fig.suptitle(
-        "As sensor budget grows, optimized layouts split sensing between "
-        "near and far wake rather than densifying one cross-stream rake",
+        "Optimized layouts split sensing between near and far wake",
         fontsize=13.5,
         fontweight="bold",
     )
